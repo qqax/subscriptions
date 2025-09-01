@@ -280,6 +280,3 @@ paths:
           description: Subscriptions not found for the specified criteria.
         '500':
           description: Internal server error.
-
-#  ::contentReference[oaicite:5]{index=5}
-

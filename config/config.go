@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/joho/godotenv"
-	"subscription/logger"
+	"subscription/pkg/logger"
 )
 
 var (

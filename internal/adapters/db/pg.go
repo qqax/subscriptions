@@ -2,11 +2,10 @@ package db
 
 import (
 	"fmt"
+	"subscription/pkg/logger"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	"subscription/logger"
 )
 
 // Client wraps the GORM DB instance.

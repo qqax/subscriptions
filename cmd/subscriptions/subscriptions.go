@@ -2,7 +2,7 @@ package main
 
 import (
 	"subscription/config"
-	"subscription/logger"
+	"subscription/pkg/logger"
 )
 
 func main() {
