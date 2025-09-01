@@ -159,3 +159,4 @@ $RECYCLE.BIN/
 *.lnk
 
 *.env*
+!.env.example
