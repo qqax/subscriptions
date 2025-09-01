@@ -49,7 +49,7 @@ func generateModels(client *db.Client) error {
 
 	g.UseDB(client.DB)
 
-	g.ApplyBasic(models.Service{}, models.Subscription{})
+	g.ApplyBasic(models.Service{}, &models.Price{}, &models.ServiceStatus{}, models.Subscription{})
 
 	g.Execute()
 	return nil
@@ -57,7 +57,7 @@ func generateModels(client *db.Client) error {
 
 func migrateDatabase(db *gorm.DB) error {
 	if err := db.AutoMigrate(
-		&models.Service{}, &models.Subscription{},
+		&models.Service{}, &models.Price{}, &models.ServiceStatus{}, &models.Subscription{},
 	); err != nil {
 		return err
 	}

@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+// Init initializes the logger with the specified log level.
+// If the log level is an empty string, it defaults to "info".
+// The logger outputs to stderr in a human-readable format with timestamps and caller information.
 func Init(logLevel string) error {
 	if logLevel == "" {
 		logLevel = "info"
@@ -35,30 +38,37 @@ func Init(logLevel string) error {
 	return nil
 }
 
+// Trace returns a logger event with trace level.
 func Trace() *zerolog.Event {
 	return log.Trace()
 }
 
+// Debug returns a logger event with debug level.
 func Debug() *zerolog.Event {
 	return log.Debug()
 }
 
+// Info returns a logger event with info level.
 func Info() *zerolog.Event {
 	return log.Info()
 }
 
+// Warn returns a logger event with warn level.
 func Warn() *zerolog.Event {
 	return log.Warn()
 }
 
+// Error returns a logger event with error level.
 func Error() *zerolog.Event {
 	return log.Error()
 }
 
+// Fatal returns a logger event with fatal level.
 func Fatal() *zerolog.Event {
 	return log.Fatal()
 }
 
+// Panic returns a logger event with panic level.
 func Panic() *zerolog.Event {
 	return log.Panic()
 }

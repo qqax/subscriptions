@@ -11,7 +11,22 @@ type Service struct {
 	ServiceName   string         `gorm:"not null"`
 	Subscriptions []Subscription `gorm:"foreignKey:ServiceID"`
 	ID            uint           `gorm:"primaryKey"`
-	MonthlyPrice  float64        `gorm:"not null"`
+}
+
+type Price struct {
+	Date         time.Time `gorm:"not null"`
+	Service      Service
+	ID           uint    `gorm:"primaryKey"`
+	ServiceID    uint    `gorm:"not null;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	MonthlyPrice float64 `gorm:"not null"`
+}
+
+type ServiceStatus struct {
+	Date      time.Time `gorm:"not null"`
+	Service   Service
+	ID        uint `gorm:"primaryKey"`
+	ServiceID uint `gorm:"not null;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Active    bool `gorm:"not null"`
 }
 
 type Subscription struct {
@@ -20,7 +35,8 @@ type Subscription struct {
 	UpdatedAt time.Time
 	EndDate   *time.Time     `gorm:"default:null"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
-	ID        uint           `gorm:"primaryKey"`
-	ServiceID uint           `gorm:"not null;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	UserID    uuid.UUID      `gorm:"type:uuid;not null;unique"`
+	Service   Service
+	ID        uint      `gorm:"primaryKey"`
+	ServiceID uint      `gorm:"not null;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	UserID    uuid.UUID `gorm:"type:uuid;not null;unique"`
 }
