@@ -72,32 +72,19 @@ components:
           example: '2026-07-01'
           description: Optional end date of the subscription.
 
-    SubscriptionUpdate:
+    SubscriptionEndDateUpdate:
       type: object
       properties:
-        service_name:
-          type: string
-          example: Yandex Plus
-          description: Name of the service providing the subscription.
-        price:
-          type: integer
-          example: 400
-          description: Monthly subscription price in rubles.
         user_id:
           type: string
           format: uuid
           example: 60601fee-2bf1-4721-ae6f-7636e79a0cba
           description: Unique identifier of the user.
-        start_date:
-          type: string
-          format: date
-          example: '2025-07-01'
-          description: Start date of the subscription.
         end_date:
           type: string
           format: date
           example: '2026-07-01'
-          description: Optional end date of the subscription.
+          description: End date of the subscription.
 
   responses:
     SubscriptionNotFound:
@@ -179,35 +166,6 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-    put:
-      summary: Update a subscription by ID.
-      operationId: updateSubscription
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: The ID of the subscription.
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SubscriptionUpdate'
-      responses:
-        '200':
-          description: Subscription updated successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Subscription'
-        '404':
-          $ref: '#/components/responses/SubscriptionNotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
     delete:
       summary: Delete a subscription by ID.
       operationId: deleteSubscription
@@ -222,6 +180,32 @@ paths:
       responses:
         '204':
           description: Subscription deleted successfully.
+        '404':
+          $ref: '#/components/responses/SubscriptionNotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /subscriptions/end_date:
+    patch:
+      summary: Add subscription end date.
+      operationId: changeSubscriptionEndDate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the subscription.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionEndDateUpdate'
+      responses:
+        '204':
+          description: Set subscription end date.
         '404':
           $ref: '#/components/responses/SubscriptionNotFound'
         '401':

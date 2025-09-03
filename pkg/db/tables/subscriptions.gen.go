@@ -7,7 +7,6 @@ package tables
 import (
 	"context"
 	"database/sql"
-	"subscription/internal/adapters/db"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -17,13 +16,15 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
+
+	"subscription/internal/adapters/db/models"
 )
 
 func newSubscription(db *gorm.DB, opts ...gen.DOOption) subscription {
 	_subscription := subscription{}
 
 	_subscription.subscriptionDo.UseDB(db, opts...)
-	_subscription.subscriptionDo.UseModel(&db.Subscription{})
+	_subscription.subscriptionDo.UseModel(&models.Subscription{})
 
 	tableName := _subscription.subscriptionDo.TableName()
 	_subscription.ALL = field.NewAsterisk(tableName)
@@ -173,7 +174,7 @@ func (a subscriptionBelongsToService) Session(session *gorm.Session) *subscripti
 	return &a
 }
 
-func (a subscriptionBelongsToService) Model(m *db.Subscription) *subscriptionBelongsToServiceTx {
+func (a subscriptionBelongsToService) Model(m *models.Subscription) *subscriptionBelongsToServiceTx {
 	return &subscriptionBelongsToServiceTx{a.db.Model(m).Association(a.Name())}
 }
 
@@ -184,11 +185,11 @@ func (a subscriptionBelongsToService) Unscoped() *subscriptionBelongsToService {
 
 type subscriptionBelongsToServiceTx struct{ tx *gorm.Association }
 
-func (a subscriptionBelongsToServiceTx) Find() (result *db.Service, err error) {
+func (a subscriptionBelongsToServiceTx) Find() (result *models.Service, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a subscriptionBelongsToServiceTx) Append(values ...*db.Service) (err error) {
+func (a subscriptionBelongsToServiceTx) Append(values ...*models.Service) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -196,7 +197,7 @@ func (a subscriptionBelongsToServiceTx) Append(values ...*db.Service) (err error
 	return a.tx.Append(targetValues...)
 }
 
-func (a subscriptionBelongsToServiceTx) Replace(values ...*db.Service) (err error) {
+func (a subscriptionBelongsToServiceTx) Replace(values ...*models.Service) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -204,7 +205,7 @@ func (a subscriptionBelongsToServiceTx) Replace(values ...*db.Service) (err erro
 	return a.tx.Replace(targetValues...)
 }
 
-func (a subscriptionBelongsToServiceTx) Delete(values ...*db.Service) (err error) {
+func (a subscriptionBelongsToServiceTx) Delete(values ...*models.Service) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -256,17 +257,17 @@ type ISubscriptionDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) ISubscriptionDo
 	Unscoped() ISubscriptionDo
-	Create(values ...*db.Subscription) error
-	CreateInBatches(values []*db.Subscription, batchSize int) error
-	Save(values ...*db.Subscription) error
-	First() (*db.Subscription, error)
-	Take() (*db.Subscription, error)
-	Last() (*db.Subscription, error)
-	Find() ([]*db.Subscription, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*db.Subscription, err error)
-	FindInBatches(result *[]*db.Subscription, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*models.Subscription) error
+	CreateInBatches(values []*models.Subscription, batchSize int) error
+	Save(values ...*models.Subscription) error
+	First() (*models.Subscription, error)
+	Take() (*models.Subscription, error)
+	Last() (*models.Subscription, error)
+	Find() ([]*models.Subscription, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Subscription, err error)
+	FindInBatches(result *[]*models.Subscription, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*db.Subscription) (info gen.ResultInfo, err error)
+	Delete(...*models.Subscription) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -278,9 +279,9 @@ type ISubscriptionDo interface {
 	Assign(attrs ...field.AssignExpr) ISubscriptionDo
 	Joins(fields ...field.RelationField) ISubscriptionDo
 	Preload(fields ...field.RelationField) ISubscriptionDo
-	FirstOrInit() (*db.Subscription, error)
-	FirstOrCreate() (*db.Subscription, error)
-	FindByPage(offset int, limit int) (result []*db.Subscription, count int64, err error)
+	FirstOrInit() (*models.Subscription, error)
+	FirstOrCreate() (*models.Subscription, error)
+	FindByPage(offset int, limit int) (result []*models.Subscription, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Rows() (*sql.Rows, error)
 	Row() *sql.Row
@@ -382,57 +383,57 @@ func (s subscriptionDo) Unscoped() ISubscriptionDo {
 	return s.withDO(s.DO.Unscoped())
 }
 
-func (s subscriptionDo) Create(values ...*db.Subscription) error {
+func (s subscriptionDo) Create(values ...*models.Subscription) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return s.DO.Create(values)
 }
 
-func (s subscriptionDo) CreateInBatches(values []*db.Subscription, batchSize int) error {
+func (s subscriptionDo) CreateInBatches(values []*models.Subscription, batchSize int) error {
 	return s.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (s subscriptionDo) Save(values ...*db.Subscription) error {
+func (s subscriptionDo) Save(values ...*models.Subscription) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return s.DO.Save(values)
 }
 
-func (s subscriptionDo) First() (*db.Subscription, error) {
+func (s subscriptionDo) First() (*models.Subscription, error) {
 	if result, err := s.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*db.Subscription), nil
+		return result.(*models.Subscription), nil
 	}
 }
 
-func (s subscriptionDo) Take() (*db.Subscription, error) {
+func (s subscriptionDo) Take() (*models.Subscription, error) {
 	if result, err := s.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*db.Subscription), nil
+		return result.(*models.Subscription), nil
 	}
 }
 
-func (s subscriptionDo) Last() (*db.Subscription, error) {
+func (s subscriptionDo) Last() (*models.Subscription, error) {
 	if result, err := s.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*db.Subscription), nil
+		return result.(*models.Subscription), nil
 	}
 }
 
-func (s subscriptionDo) Find() ([]*db.Subscription, error) {
+func (s subscriptionDo) Find() ([]*models.Subscription, error) {
 	result, err := s.DO.Find()
-	return result.([]*db.Subscription), err
+	return result.([]*models.Subscription), err
 }
 
-func (s subscriptionDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*db.Subscription, err error) {
-	buf := make([]*db.Subscription, 0, batchSize)
+func (s subscriptionDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Subscription, err error) {
+	buf := make([]*models.Subscription, 0, batchSize)
 	err = s.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -440,7 +441,7 @@ func (s subscriptionDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int
 	return results, err
 }
 
-func (s subscriptionDo) FindInBatches(result *[]*db.Subscription, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (s subscriptionDo) FindInBatches(result *[]*models.Subscription, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return s.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -466,23 +467,23 @@ func (s subscriptionDo) Preload(fields ...field.RelationField) ISubscriptionDo {
 	return &s
 }
 
-func (s subscriptionDo) FirstOrInit() (*db.Subscription, error) {
+func (s subscriptionDo) FirstOrInit() (*models.Subscription, error) {
 	if result, err := s.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*db.Subscription), nil
+		return result.(*models.Subscription), nil
 	}
 }
 
-func (s subscriptionDo) FirstOrCreate() (*db.Subscription, error) {
+func (s subscriptionDo) FirstOrCreate() (*models.Subscription, error) {
 	if result, err := s.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*db.Subscription), nil
+		return result.(*models.Subscription), nil
 	}
 }
 
-func (s subscriptionDo) FindByPage(offset int, limit int) (result []*db.Subscription, count int64, err error) {
+func (s subscriptionDo) FindByPage(offset int, limit int) (result []*models.Subscription, count int64, err error) {
 	result, err = s.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -511,7 +512,7 @@ func (s subscriptionDo) Scan(result interface{}) (err error) {
 	return s.DO.Scan(result)
 }
 
-func (s subscriptionDo) Delete(models ...*db.Subscription) (result gen.ResultInfo, err error) {
+func (s subscriptionDo) Delete(models ...*models.Subscription) (result gen.ResultInfo, err error) {
 	return s.DO.Delete(models)
 }
 

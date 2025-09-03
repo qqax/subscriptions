@@ -7,10 +7,11 @@ package tables
 import (
 	"context"
 	"database/sql"
+	"subscription/internal/adapters/db/models"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
-	"subscription/internal/adapters/db"
 
 	"gorm.io/gen"
 	"gorm.io/gen/field"
@@ -22,7 +23,7 @@ func newPrice(db *gorm.DB, opts ...gen.DOOption) price {
 	_price := price{}
 
 	_price.priceDo.UseDB(db, opts...)
-	_price.priceDo.UseModel(&db.Price{})
+	_price.priceDo.UseModel(&models.Price{})
 
 	tableName := _price.priceDo.TableName()
 	_price.ALL = field.NewAsterisk(tableName)
@@ -156,7 +157,7 @@ func (a priceBelongsToService) Session(session *gorm.Session) *priceBelongsToSer
 	return &a
 }
 
-func (a priceBelongsToService) Model(m *db.Price) *priceBelongsToServiceTx {
+func (a priceBelongsToService) Model(m *models.Price) *priceBelongsToServiceTx {
 	return &priceBelongsToServiceTx{a.db.Model(m).Association(a.Name())}
 }
 
@@ -167,11 +168,11 @@ func (a priceBelongsToService) Unscoped() *priceBelongsToService {
 
 type priceBelongsToServiceTx struct{ tx *gorm.Association }
 
-func (a priceBelongsToServiceTx) Find() (result *db.Service, err error) {
+func (a priceBelongsToServiceTx) Find() (result *models.Service, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a priceBelongsToServiceTx) Append(values ...*db.Service) (err error) {
+func (a priceBelongsToServiceTx) Append(values ...*models.Service) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -179,7 +180,7 @@ func (a priceBelongsToServiceTx) Append(values ...*db.Service) (err error) {
 	return a.tx.Append(targetValues...)
 }
 
-func (a priceBelongsToServiceTx) Replace(values ...*db.Service) (err error) {
+func (a priceBelongsToServiceTx) Replace(values ...*models.Service) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -187,7 +188,7 @@ func (a priceBelongsToServiceTx) Replace(values ...*db.Service) (err error) {
 	return a.tx.Replace(targetValues...)
 }
 
-func (a priceBelongsToServiceTx) Delete(values ...*db.Service) (err error) {
+func (a priceBelongsToServiceTx) Delete(values ...*models.Service) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -239,17 +240,17 @@ type IPriceDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) IPriceDo
 	Unscoped() IPriceDo
-	Create(values ...*db.Price) error
-	CreateInBatches(values []*db.Price, batchSize int) error
-	Save(values ...*db.Price) error
-	First() (*db.Price, error)
-	Take() (*db.Price, error)
-	Last() (*db.Price, error)
-	Find() ([]*db.Price, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*db.Price, err error)
-	FindInBatches(result *[]*db.Price, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*models.Price) error
+	CreateInBatches(values []*models.Price, batchSize int) error
+	Save(values ...*models.Price) error
+	First() (*models.Price, error)
+	Take() (*models.Price, error)
+	Last() (*models.Price, error)
+	Find() ([]*models.Price, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Price, err error)
+	FindInBatches(result *[]*models.Price, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*db.Price) (info gen.ResultInfo, err error)
+	Delete(...*models.Price) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -261,9 +262,9 @@ type IPriceDo interface {
 	Assign(attrs ...field.AssignExpr) IPriceDo
 	Joins(fields ...field.RelationField) IPriceDo
 	Preload(fields ...field.RelationField) IPriceDo
-	FirstOrInit() (*db.Price, error)
-	FirstOrCreate() (*db.Price, error)
-	FindByPage(offset int, limit int) (result []*db.Price, count int64, err error)
+	FirstOrInit() (*models.Price, error)
+	FirstOrCreate() (*models.Price, error)
+	FindByPage(offset int, limit int) (result []*models.Price, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Rows() (*sql.Rows, error)
 	Row() *sql.Row
@@ -365,57 +366,57 @@ func (p priceDo) Unscoped() IPriceDo {
 	return p.withDO(p.DO.Unscoped())
 }
 
-func (p priceDo) Create(values ...*db.Price) error {
+func (p priceDo) Create(values ...*models.Price) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return p.DO.Create(values)
 }
 
-func (p priceDo) CreateInBatches(values []*db.Price, batchSize int) error {
+func (p priceDo) CreateInBatches(values []*models.Price, batchSize int) error {
 	return p.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (p priceDo) Save(values ...*db.Price) error {
+func (p priceDo) Save(values ...*models.Price) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return p.DO.Save(values)
 }
 
-func (p priceDo) First() (*db.Price, error) {
+func (p priceDo) First() (*models.Price, error) {
 	if result, err := p.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*db.Price), nil
+		return result.(*models.Price), nil
 	}
 }
 
-func (p priceDo) Take() (*db.Price, error) {
+func (p priceDo) Take() (*models.Price, error) {
 	if result, err := p.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*db.Price), nil
+		return result.(*models.Price), nil
 	}
 }
 
-func (p priceDo) Last() (*db.Price, error) {
+func (p priceDo) Last() (*models.Price, error) {
 	if result, err := p.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*db.Price), nil
+		return result.(*models.Price), nil
 	}
 }
 
-func (p priceDo) Find() ([]*db.Price, error) {
+func (p priceDo) Find() ([]*models.Price, error) {
 	result, err := p.DO.Find()
-	return result.([]*db.Price), err
+	return result.([]*models.Price), err
 }
 
-func (p priceDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*db.Price, err error) {
-	buf := make([]*db.Price, 0, batchSize)
+func (p priceDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Price, err error) {
+	buf := make([]*models.Price, 0, batchSize)
 	err = p.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -423,7 +424,7 @@ func (p priceDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error
 	return results, err
 }
 
-func (p priceDo) FindInBatches(result *[]*db.Price, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (p priceDo) FindInBatches(result *[]*models.Price, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return p.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -449,23 +450,23 @@ func (p priceDo) Preload(fields ...field.RelationField) IPriceDo {
 	return &p
 }
 
-func (p priceDo) FirstOrInit() (*db.Price, error) {
+func (p priceDo) FirstOrInit() (*models.Price, error) {
 	if result, err := p.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*db.Price), nil
+		return result.(*models.Price), nil
 	}
 }
 
-func (p priceDo) FirstOrCreate() (*db.Price, error) {
+func (p priceDo) FirstOrCreate() (*models.Price, error) {
 	if result, err := p.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*db.Price), nil
+		return result.(*models.Price), nil
 	}
 }
 
-func (p priceDo) FindByPage(offset int, limit int) (result []*db.Price, count int64, err error) {
+func (p priceDo) FindByPage(offset int, limit int) (result []*models.Price, count int64, err error) {
 	result, err = p.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -494,7 +495,7 @@ func (p priceDo) Scan(result interface{}) (err error) {
 	return p.DO.Scan(result)
 }
 
-func (p priceDo) Delete(models ...*db.Price) (result gen.ResultInfo, err error) {
+func (p priceDo) Delete(models ...*models.Price) (result gen.ResultInfo, err error) {
 	return p.DO.Delete(models)
 }
 

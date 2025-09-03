@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"subscription/config"
 	"subscription/internal/adapters/db"
+	"subscription/internal/adapters/db/models"
 	"subscription/pkg/logger"
 )
 
@@ -55,7 +56,7 @@ func generateModels(client *db.Client) error {
 	g.UseDB(client.DB)
 
 	// Include core domain models for code generation
-	g.ApplyBasic(db.Service{}, &db.Price{}, &db.ServiceStatus{}, db.Subscription{})
+	g.ApplyBasic(models.Service{}, &models.Price{}, &models.ServiceStatus{}, models.Subscription{})
 
 	g.Execute()
 	return nil
@@ -66,7 +67,7 @@ func generateModels(client *db.Client) error {
 // ServiceStatus, and Subscription. Any migration failure is returned.
 func migrateDatabase(gdb *gorm.DB) error {
 	if err := gdb.AutoMigrate(
-		&db.Service{}, &db.Price{}, &db.ServiceStatus{}, &db.Subscription{},
+		&models.Service{}, &models.Price{}, &models.ServiceStatus{}, &models.Subscription{},
 	); err != nil {
 		return err
 	}
