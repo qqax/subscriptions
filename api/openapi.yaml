@@ -347,7 +347,7 @@ paths:
             items:
               type: string
               format: uuid
-          description: Comma-separated list of user IDs to filter by
+          description: Comma-separated list of user IDs to filter by user id
         - name: service_names
           in: query
           required: false
@@ -357,7 +357,7 @@ paths:
             type: array
             items:
               type: string
-          description: Comma-separated list of service names to filter by
+          description: Comma-separated list of service names to filter by service names
       responses:
         '200':
           description: Total cost calculation

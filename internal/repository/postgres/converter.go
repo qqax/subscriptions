@@ -7,7 +7,6 @@ import (
 	"subscription/core/ports"
 	"subscription/internal/repository/postgres/models"
 
-	"github.com/google/uuid"
 	"subscription/core/domain"
 )
 
@@ -21,7 +20,7 @@ func ToDBModel(domainSub *domain.Subscription) (*models.Subscription, error) {
 	dbSub := &models.Subscription{
 		ServiceName: domainSub.ServiceName,
 		Price:       domainSub.Price,
-		UserID:      uuid.MustParse(domainSub.UserID),
+		UserID:      domainSub.UserID,
 		StartMonth:  startMonth,
 		StartYear:   startYear,
 	}
@@ -39,6 +38,7 @@ func ToDBModel(domainSub *domain.Subscription) (*models.Subscription, error) {
 }
 
 // ToDomain converts DB model to domain Subscription
+
 func ToDomain(dbSub *models.Subscription) (*domain.Subscription, error) {
 	startDate := formatMMYYYY(dbSub.StartMonth, dbSub.StartYear)
 
@@ -48,10 +48,11 @@ func ToDomain(dbSub *models.Subscription) (*domain.Subscription, error) {
 		endDate = &formatted
 	}
 
+	// Создаем domain модель
 	return domain.NewSubscription(
 		dbSub.ServiceName,
 		dbSub.Price,
-		dbSub.UserID.String(),
+		dbSub.UserID,
 		startDate,
 		endDate,
 	)

@@ -3,16 +3,17 @@ package domain
 import (
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"regexp"
 	"time"
 )
 
 // Subscription represents the core business entity for user server
 type Subscription struct {
-	ID          string
+	ID          uuid.UUID
 	ServiceName string
 	Price       int
-	UserID      string
+	UserID      uuid.UUID
 	StartDate   string  // Format: MM-YYYY
 	EndDate     *string // Format: MM-YYYY, nullable
 	CreatedAt   time.Time
@@ -20,7 +21,7 @@ type Subscription struct {
 }
 
 // NewSubscription creates a new Subscription with validation
-func NewSubscription(serviceName string, price int, userID, startDate string, endDate *string) (*Subscription, error) {
+func NewSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, error) {
 	sub := &Subscription{
 		ServiceName: serviceName,
 		Price:       price,
@@ -48,7 +49,7 @@ func (s *Subscription) Validate() error {
 		return errors.New("price must be positive")
 	}
 
-	if s.UserID == "" {
+	if s.UserID == uuid.Nil {
 		return errors.New("user ID is required")
 	}
 
@@ -167,7 +168,7 @@ func calculateOverlapMonths(subStart, subEnd, periodStart, periodEnd string) (in
 // SubscriptionFactory creates server with generated ID
 type SubscriptionFactory struct{}
 
-func (f *SubscriptionFactory) CreateSubscription(serviceName string, price int, userID, startDate string, endDate *string) (*Subscription, error) {
+func (f *SubscriptionFactory) CreateSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, error) {
 	sub, err := NewSubscription(serviceName, price, userID, startDate, endDate)
 	if err != nil {
 		return nil, err
@@ -177,8 +178,6 @@ func (f *SubscriptionFactory) CreateSubscription(serviceName string, price int, 
 	return sub, nil
 }
 
-func generateUUID() string {
-	// This would typically use github.com/google/uuid
-	// For now, return a placeholder
-	return "uuid-placeholder"
+func generateUUID() uuid.UUID {
+	return uuid.New()
 }

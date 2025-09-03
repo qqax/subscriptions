@@ -3,6 +3,8 @@ package ogen
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
+	"subscription/core/domain"
 	"subscription/core/ports"
 	"subscription/internal/logger"
 	"time"
@@ -57,11 +59,16 @@ func (h *OgenAdapter) SubscriptionsGet(ctx context.Context, params api.Subscript
 func (h *OgenAdapter) SubscriptionsPost(ctx context.Context, req *api.SubscriptionCreate) (api.SubscriptionsPostRes, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
+	userID, err := uuid.Parse(req.UserID.String())
+	if err != nil {
+		return convertSubscriptionsPostError(ports.ErrInvalidUUID), nil
+	}
+
 	// Convert ogen request to domain request
 	domainReq := &ports.CreateSubscriptionRequest{
 		ServiceName: req.ServiceName,
 		Price:       int(req.Price),
-		UserID:      req.UserID.String(),
+		UserID:      userID,
 		StartDate:   req.StartDate,
 		EndDate:     getStringPtrFromOptNil(req.EndDate),
 	}
@@ -83,7 +90,7 @@ func (h *OgenAdapter) SubscriptionsPost(ctx context.Context, req *api.Subscripti
 func (h *OgenAdapter) SubscriptionsIDGet(ctx context.Context, params api.SubscriptionsIDGetParams) (api.SubscriptionsIDGetRes, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
-	subscription, err := h.service.GetSubscription(ctx, params.ID.String())
+	subscription, err := h.service.GetSubscription(ctx, params.ID)
 	if err != nil {
 		log.Error().Err(err).Str("subscription_id", params.ID.String()).Msg("Failed to get subscription")
 		return convertSubscriptionsIDGetError(err), nil
@@ -99,12 +106,12 @@ func (h *OgenAdapter) SubscriptionsIDPut(ctx context.Context, req *api.Subscript
 	domainReq := &ports.UpdateSubscriptionRequest{
 		ServiceName: req.ServiceName,
 		Price:       int(req.Price),
-		UserID:      req.UserID.String(),
+		UserID:      req.UserID,
 		StartDate:   req.StartDate,
 		EndDate:     getStringPtrFromOptNil(req.EndDate),
 	}
 
-	subscription, err := h.service.UpdateSubscription(ctx, params.ID.String(), domainReq)
+	subscription, err := h.service.UpdateSubscription(ctx, params.ID, domainReq)
 	if err != nil {
 		log.Error().Err(err).Str("subscription_id", params.ID.String()).Msg("Failed to update subscription")
 		return convertSubscriptionsIDPutError(err), nil
@@ -125,7 +132,7 @@ func (h *OgenAdapter) SubscriptionsIDPatch(ctx context.Context, req *api.Subscri
 		EndDate:     getStringPtrFromOptNil(req.EndDate),
 	}
 
-	subscription, err := h.service.PartialUpdateSubscription(ctx, params.ID.String(), domainReq)
+	subscription, err := h.service.PartialUpdateSubscription(ctx, params.ID, domainReq)
 	if err != nil {
 		log.Error().Err(err).Str("subscription_id", params.ID.String()).Msg("Failed to partially update subscription")
 		return convertSubscriptionsIDPatchError(err), nil
@@ -138,7 +145,7 @@ func (h *OgenAdapter) SubscriptionsIDPatch(ctx context.Context, req *api.Subscri
 func (h *OgenAdapter) SubscriptionsIDDelete(ctx context.Context, params api.SubscriptionsIDDeleteParams) (api.SubscriptionsIDDeleteRes, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
-	err := h.service.DeleteSubscription(ctx, params.ID.String())
+	err := h.service.DeleteSubscription(ctx, params.ID)
 	if err != nil {
 		log.Error().Err(err).Str("subscription_id", params.ID.String()).Msg("Failed to delete subscription")
 		return convertSubscriptionsIDDeleteError(err), nil
@@ -172,7 +179,13 @@ func (h *OgenAdapter) SubscriptionsSummaryTotalCostGet(ctx context.Context, para
 	optPeriod.SetTo(period)
 
 	filter := api.SubscriptionsSummaryTotalCostGetOKFilterCriteria{}
-	filter.SetUserIds(result.FilterCriteria.UserIDs)
+
+	stringIDs := make([]string, len(params.UserIds))
+	for i := range params.UserIds {
+		stringIDs[i] = params.UserIds[i].String()
+	}
+
+	filter.SetUserIds(stringIDs)
 	filter.SetServiceNames(result.FilterCriteria.ServiceNames)
 
 	optFilter := api.OptSubscriptionsSummaryTotalCostGetOKFilterCriteria{}
@@ -198,7 +211,7 @@ func convertFilterParams(params api.SubscriptionsGetParams) ports.SubscriptionFi
 	}
 }
 
-func convertSubscriptionToOgen(sub *ports.Subscription) *api.Subscription {
+func convertSubscriptionToOgen(sub *domain.Subscription) *api.Subscription {
 	if sub == nil {
 		return nil
 	}
@@ -215,7 +228,7 @@ func convertSubscriptionToOgen(sub *ports.Subscription) *api.Subscription {
 	}
 }
 
-func convertSubscriptionsToOgen(subscriptions []*ports.Subscription) []api.Subscription {
+func convertSubscriptionsToOgen(subscriptions []*domain.Subscription) []api.Subscription {
 	result := make([]api.Subscription, len(subscriptions))
 	for i, sub := range subscriptions {
 		result[i] = api.Subscription{
@@ -444,11 +457,11 @@ func getIntPtrFromOpt(opt api.OptInt32) *int {
 	return &value
 }
 
-func getStringPtrFromUUIDOpt(opt api.OptUUID) *string {
+func getStringPtrFromUUIDOpt(opt api.OptUUID) *uuid.UUID {
 	if !opt.Set {
 		return nil
 	}
-	value := opt.Value.String()
+	value := opt.Value
 	return &value
 }
 
