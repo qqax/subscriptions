@@ -56,4 +56,10 @@ subscription/
    git clone <repo-url>
    cd subscription
     ```
+   
+gorm
+opanapi
+ogen ogen --target internal/api/generated api/openapi.yaml
+betteralign -apply ./...
+
 
