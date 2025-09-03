@@ -5,19 +5,20 @@ import (
 	"strconv"
 	"strings"
 	"subscription/core/ports"
+	"subscription/internal/repository/postgres/models"
 
 	"github.com/google/uuid"
 	"subscription/core/domain"
 )
 
 // ToDBModel converts domain Subscription to DB model
-func ToDBModel(domainSub *domain.Subscription) (*Subscription, error) {
+func ToDBModel(domainSub *domain.Subscription) (*models.Subscription, error) {
 	startMonth, startYear, err := parseMMYYYY(domainSub.StartDate)
 	if err != nil {
 		return nil, err
 	}
 
-	dbSub := &Subscription{
+	dbSub := &models.Subscription{
 		ServiceName: domainSub.ServiceName,
 		Price:       domainSub.Price,
 		UserID:      uuid.MustParse(domainSub.UserID),
@@ -38,7 +39,7 @@ func ToDBModel(domainSub *domain.Subscription) (*Subscription, error) {
 }
 
 // ToDomain converts DB model to domain Subscription
-func ToDomain(dbSub *Subscription) (*domain.Subscription, error) {
+func ToDomain(dbSub *models.Subscription) (*domain.Subscription, error) {
 	startDate := formatMMYYYY(dbSub.StartMonth, dbSub.StartYear)
 
 	var endDate *string

@@ -4,8 +4,8 @@ package main
 import (
 	"net/http"
 	"os"
+	"subscription/internal/repository/postgres/models"
 
-	"subscription/core/ports"
 	"subscription/core/service"
 	ogenServer "subscription/internal/api/generated" // сгенерированный ogen server
 	ogenAdapter "subscription/internal/handler/ogen"
@@ -38,7 +38,7 @@ func main() {
 	defer dbClient.Close()
 
 	// Миграции
-	if err := dbClient.Migrate(&postgres.Subscription{}); err != nil {
+	if err := dbClient.Migrate(&models.Subscription{}); err != nil {
 		logger.Fatal().Err(err).Msg("Failed to run migrations")
 	}
 

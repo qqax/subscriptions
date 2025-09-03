@@ -1,76 +1,86 @@
+// cmd/generate/main.go
 package main
 
 import (
+	"log"
+	"os"
+
+	"subscription/internal/logger"
+	"subscription/internal/repository/postgres"
+	"subscription/internal/repository/postgres/models"
+
 	"gorm.io/gen"
 	"gorm.io/gorm"
-	"subscription/config"
-	"subscription/internal/adapters/db"
-	"subscription/internal/adapters/db/models"
-	"subscription/pkg/logger"
 )
 
-// main initializes configuration, logging, and database connectivity,
-// then proceeds to generate GORM models and perform schema migrations.
-// The application will terminate if any of these steps fail.
+// main генерирует GORM модели из структуры БД
 func main() {
-	if err := config.Load(); err != nil {
-		logger.Fatal().Err(err).Msg("loading configuration")
+	// Инициализация логгера
+	if err := logger.InitSimple("info"); err != nil {
+		log.Fatal("Failed to initialize logger:", err)
 	}
 
-	if err := logger.Init(config.LogLevel); err != nil {
-		logger.Fatal().Err(err).Msg("initializing logger")
+	// Получение конфигурации из переменных окружения
+	dbConfig := postgres.Params{
+		Host:     getEnv("DB_HOST", "localhost"),
+		Port:     getEnv("DB_PORT", "5432"),
+		User:     getEnv("DB_USER", "postgres"),
+		Password: getEnv("DB_PASSWORD", "postgres"),
+		Name:     getEnv("DB_NAME", "subscriptions"),
+		SSLMode:  getEnv("DB_SSLMODE", "disable"),
 	}
 
-	client, err := db.NewClient(db.Params{
-		Host:     config.DBHost,
-		Port:     config.DBPort,
-		User:     config.DBUser,
-		Password: config.DBPassword,
-		Name:     config.DBName,
-	})
+	// Подключение к БД
+	client, err := postgres.NewClient(dbConfig)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("connecting to database")
+		logger.Fatal().Err(err).Msg("Failed to connect to database")
+	}
+	defer client.Close()
+
+	// Генерация моделей
+	if err := generateModels(client.DB); err != nil {
+		logger.Fatal().Err(err).Msg("Failed to generate models")
 	}
 
-	if err = generateModels(client); err != nil {
-		logger.Fatal().Err(err).Msg("generating database models")
+	// Миграции (опционально)
+	if err := migrateDatabase(client.DB); err != nil {
+		logger.Fatal().Err(err).Msg("Failed to migrate database")
 	}
 
-	if err = migrateDatabase(client.DB); err != nil {
-		logger.Fatal().Err(err).Msg("migrating database")
-	}
-
-	logger.Info().Msg("Model generation and migration completed successfully")
+	logger.Info().Msg("Model generation completed successfully")
 }
 
-// generateModels uses GORM's code generator to create model definitions
-// from the domain models. It outputs generated code under the
-// "./pkg/db/tables" directory using options suitable for tests,
-// interfaces, and default queries.
-func generateModels(client *db.Client) error {
+// generateModels генерирует код моделей GORM
+func generateModels(db *gorm.DB) error {
 	g := gen.NewGenerator(gen.Config{
-		OutPath: "./pkg/db/tables",
-		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+		OutPath:       "./internal/repository/postgres/generated",
+		ModelPkgPath:  "github.com/your-org/your-app/internal/repository/postgres/generated",
+		Mode:          gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+		FieldNullable: true,
 	})
 
-	g.UseDB(client.DB)
+	g.UseDB(db)
 
-	// Include core domain models for code generation
-	g.ApplyBasic(models.Service{}, &models.Price{}, &models.ServiceStatus{}, models.Subscription{})
+	// Регистрируем модели для генерации
+	g.ApplyBasic(
+		models.Subscription{},
+		// Добавьте другие модели по необходимости
+	)
 
 	g.Execute()
 	return nil
 }
 
-// migrateDatabase applies schema migrations using GORM's AutoMigrate method.
-// It ensures that the database schema matches the models for Service, Price,
-// ServiceStatus, and Subscription. Any migration failure is returned.
-func migrateDatabase(gdb *gorm.DB) error {
-	if err := gdb.AutoMigrate(
-		&models.Service{}, &models.Price{}, &models.ServiceStatus{}, &models.Subscription{},
-	); err != nil {
-		return err
-	}
+// migrateDatabase применяет миграции
+func migrateDatabase(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&models.Subscription{},
+	)
+}
 
-	return nil
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }
