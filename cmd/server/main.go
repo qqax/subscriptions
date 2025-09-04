@@ -4,6 +4,7 @@ package main
 import (
 	"net/http"
 	"subscription/internal/config"
+	"subscription/internal/handler"
 	"subscription/internal/repository/postgres/models"
 
 	"subscription/core/service"
@@ -39,6 +40,7 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to connect to database")
 	}
+
 	defer dbClient.Close()
 
 	// Миграции
@@ -62,16 +64,11 @@ func main() {
 	}
 
 	// Add middleware
-	httpHandler := addMiddleware(server)
+	httpHandler := handler.AddMiddleware(server)
 
 	// Запуск сервера
 	logger.Info().Msgf("Starting server on %s:%s", config.ServerHost, config.ServerPort)
 	if err = http.ListenAndServe(config.ServerHost+":"+config.ServerPort, httpHandler); err != nil {
 		logger.Fatal().Err(err).Msg("Server failed")
 	}
-}
-
-func addMiddleware(handler http.Handler) http.Handler {
-	// Add your middleware here
-	return handler
 }
