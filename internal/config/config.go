@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/joho/godotenv"
+	"os"
 	"subscription/internal/logger"
 )
 
@@ -30,7 +31,8 @@ var (
 // application to panic.
 func Load() error {
 	// Attempt to load variables from a .env.local file
-	if err := godotenv.Load(); err != nil {
+	env := determineEnvironment()
+	if err := godotenv.Load(env); err != nil {
 		logger.Error().Msg("No .env.local file found, using environment variables")
 	}
 
@@ -48,4 +50,15 @@ func Load() error {
 	ServerPort = mustEnvStr("SERVER_PORT")
 
 	return nil
+}
+
+func determineEnvironment() string {
+	switch os.Getenv("ENV") {
+	case "production":
+		return ".env.prod"
+	case "development":
+		return ".env.dev"
+	default:
+		return ".env.local"
+	}
 }

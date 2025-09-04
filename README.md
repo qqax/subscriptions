@@ -40,7 +40,6 @@ subscription/
 ```
 
 ---
-
 ##  Getting Started
 
 ### Prerequisites
@@ -48,6 +47,13 @@ subscription/
 - Go (1.21+)
 - PostgreSQL (or another supported DB)
 - `make`, `migrate`, or your preferred tooling for migrations
+
+### Environments naming
+- Production: `.env.prod`
+- Development: `.env.dev`
+- Local: `.env.local`
+
+Example: [.env.example](.env.example)
 
 ### Setup
 
