@@ -83,37 +83,11 @@ func (s *Subscription) IsActive(referenceDate string) (bool, error) {
 	return refAfterStart && refBeforeEnd, nil
 }
 
-// CalculateCostForPeriod calculates the cost for a given period
-func (s *Subscription) CalculateCostForPeriod(startPeriod, endPeriod string) (int, error) {
-	if err := ValidateDateFormat(startPeriod); err != nil {
-		return 0, err
-	}
-	if err := ValidateDateFormat(endPeriod); err != nil {
-		return 0, err
-	}
-
-	// Check if subscription was active during any part of the period
-	subStart := s.StartDate
-	subEnd := s.EndDate
-	if subEnd == nil {
-		// If no end date, subscription is ongoing
-		subEnd = &endPeriod
-	}
-
-	// Find overlapping months between a subscription period and requested period
-	overlapMonths, err := calculateOverlapMonths(subStart, *subEnd, startPeriod, endPeriod)
-	if err != nil {
-		return 0, err
-	}
-
-	return overlapMonths * s.Price, nil
-}
-
 // SubscriptionFactory creates server with generated ID
 type SubscriptionFactory struct{}
 
 func (f *SubscriptionFactory) CreateSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, error) {
-	id := GenerateUUID()
+	id := uuid.New()
 
 	sub, err := NewSubscription(id, serviceName, price, userID, startDate, endDate)
 	if err != nil {

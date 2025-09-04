@@ -238,8 +238,11 @@ const (
 	XRequestIDKey contextKey = "x-request-id"
 )
 
+func (k contextKey) String() string {
+	return string(k)
+}
+
 func getRequestID(ctx context.Context) string {
-	// Пробуем получить request ID из стандартных ключей
 	keys := []contextKey{RequestIDKey, XRequestIDKey}
 	for _, key := range keys {
 		if value, ok := ctx.Value(key).(string); ok && value != "" {
@@ -247,19 +250,11 @@ func getRequestID(ctx context.Context) string {
 		}
 	}
 
-	// Пробуем получить из HTTP заголовков (если контекст содержит http.Request)
 	if req, ok := ctx.Value("http_request").(*http.Request); ok {
 		if requestID := req.Header.Get("X-Request-ID"); requestID != "" {
 			return requestID
 		}
 	}
-
-	// Пробуем получить из gRPC метаданных (если применимо)
-	//if md, ok := metadata.FromIncomingContext(ctx); ok {
-	//	if values := md.Get("x-request-id"); len(values) > 0 {
-	//		return values[0]
-	//	}
-	//}
 
 	return "unknown"
 }

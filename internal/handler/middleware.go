@@ -12,35 +12,34 @@ import (
 )
 
 func AddMiddleware(handler http.Handler) http.Handler {
-	return loggingMiddleware(
-		//recoveryMiddleware(
-		requestIDMiddleware(
-			corsMiddleware(
-				//authMiddleware(
-				rateLimitMiddleware(
-					handler,
+	return requestIDMiddleware(
+		loggingMiddleware(
+			recoveryMiddleware(
+				requestIDMiddleware(
+					corsMiddleware(
+						//authMiddleware(
+						rateLimitMiddleware(
+							handler,
+						),
+						//),
+					),
 				),
-				//),
 			),
 		),
-		//),
 	)
 }
 
-// loggingMiddleware логирует все HTTP запросы
+// loggingMiddleware logs all HTTP requests
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		// Создаем ResponseWriter для захвата статуса
 		wrapped := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 
-		// Выполняем запрос
 		next.ServeHTTP(wrapped, r)
 
 		duration := time.Since(start)
 
-		// Логируем запрос
 		logger.Info().
 			Str("method", r.Method).
 			Str("path", r.URL.Path).
@@ -55,7 +54,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// recoveryMiddleware обрабатывает паники и логирует ошибки
+// recoveryMiddleware handles panics and logs errors
 func recoveryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -75,7 +74,6 @@ func recoveryMiddleware(next http.Handler) http.Handler {
 					return
 				}
 
-				// Отправляем JSON ошибку вместо plain text
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
 
@@ -93,19 +91,16 @@ func recoveryMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// requestIDMiddleware добавляет Request ID к каждому запросу
+// requestIDMiddleware adds Request ID to each request
 func requestIDMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestID := r.Header.Get("X-Request-ID")
 		if requestID == "" {
-			// Генерируем UUID если не предоставлен
 			requestID = generateRequestID()
 		}
 
-		// Добавляем в заголовки ответа
 		w.Header().Set("X-Request-ID", requestID)
 
-		// Добавляем в контекст запроса
 		ctx := withRequestID(r.Context(), requestID)
 		r = r.WithContext(ctx)
 
@@ -113,7 +108,7 @@ func requestIDMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// corsMiddleware добавляет CORS headers
+// corsMiddleware adds CORS headers
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -129,7 +124,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// authMiddleware проверяет аутентификацию
+// authMiddleware checks authentication
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
@@ -159,13 +154,12 @@ func authMiddleware(next http.Handler) http.Handler {
 }
 
 func isValidToken(token string) bool {
-	// Реализация проверки токена
 	return strings.HasPrefix(token, "Bearer ")
 }
 
-// rateLimitMiddleware ограничивает частоту запросов
+// rateLimitMiddleware limits the frequency of requests
 func rateLimitMiddleware(next http.Handler) http.Handler {
-	limiter := rate.NewLimiter(rate.Every(time.Second), 10) // 10 запросов в секунду
+	limiter := rate.NewLimiter(rate.Every(time.Second), 10) // 10 requests per second
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !limiter.Allow() {
@@ -183,7 +177,7 @@ func rateLimitMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// responseWriter оборачивает http.ResponseWriter для захвата статуса
+// responseWriter wraps http.ResponseWriter to capture status
 type responseWriter struct {
 	http.ResponseWriter
 	statusCode  int
@@ -207,7 +201,7 @@ func (rw *responseWriter) Write(data []byte) (int, error) {
 	return rw.ResponseWriter.Write(data)
 }
 
-// Вспомогательные функции
+// Helper functions
 
 func getRequestID(r *http.Request) string {
 	if requestID := r.Header.Get("X-Request-ID"); requestID != "" {
@@ -220,25 +214,6 @@ func generateRequestID() string {
 	return "req-" + time.Now().Format(uuid.New().String())
 }
 
-// contextKey для хранения request ID в контексте
-type contextKey string
-
-const requestIDKey contextKey = "request_id"
-
 func withRequestID(ctx context.Context, requestID string) context.Context {
-	return context.WithValue(ctx, requestIDKey, requestID)
+	return context.WithValue(ctx, "request_id", requestID)
 }
-
-func getRequestIDFromContext(ctx context.Context) string {
-	if requestID, ok := ctx.Value(requestIDKey).(string); ok {
-		return requestID
-	}
-	return "unknown"
-}
-
-//// IsHeaderSent проверяет были ли уже отправлены заголовки
-//func IsHeaderSent(w http.ResponseWriter) bool {
-//	// Для стандартного http.ResponseWriter всегда возвращаем false
-//	// В реальном приложении можно использовать type assertion для проверки
-//	return false
-//}

@@ -27,11 +27,11 @@ type SubscriptionRepository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 
 	// GetTotalCost calculates total cost for a period with filters
-	GetTotalCost(ctx context.Context, startDate, endDate string, filter SubscriptionFilter) (int, error)
+	GetTotalCost(ctx context.Context, startMonths, endMonths string, filter SubscriptionFilter) (int, error)
 
-	// SubscriptionExists проверяет существование подписки
+	// SubscriptionExists checks for the existence of a subscription
 	SubscriptionExists(ctx context.Context, userID uuid.UUID, serviceName string) (bool, error)
 
-	// GetByUserAndService возвращает подписку по user ID и service name
+	// GetByUserAndService returns a subscription by user ID and service name
 	GetByUserAndService(ctx context.Context, userID uuid.UUID, serviceName string) (*domain.Subscription, error)
 }

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// ValidateDateFormat проверяет формат даты MM-YYYY
+// ValidateDateFormat checks date format MM-YYYY
 func ValidateDateFormat(date string) error {
 	matched, _ := regexp.MatchString(`^(0[1-9]|1[0-2])-20\d{2}$`, date)
 	if !matched {
@@ -15,7 +15,7 @@ func ValidateDateFormat(date string) error {
 	return nil
 }
 
-// ValidateDateRange проверяет что startDate <= endDate
+// ValidateDateRange checks that startDate <= endDate
 func ValidateDateRange(startDate, endDate string) error {
 	startAfterEnd, err := isDateAfter(startDate, endDate)
 	if err != nil {
@@ -27,7 +27,7 @@ func ValidateDateRange(startDate, endDate string) error {
 	return nil
 }
 
-// isDateAfter проверяет что date1 > date2
+// isDateAfter checks that date1 > date2
 func isDateAfter(date1, date2 string) (bool, error) {
 	year1, month1, err := ParseDate(date1)
 	if err != nil {
@@ -48,7 +48,7 @@ func isDateAfter(date1, date2 string) (bool, error) {
 	return false, nil
 }
 
-// isDateAfterOrEqual проверяет что date1 >= date2
+// isDateAfterOrEqual checks that date1 >= date2
 func isDateAfterOrEqual(date1, date2 string) (bool, error) {
 	after, err := isDateAfter(date1, date2)
 	if err != nil {
@@ -58,7 +58,7 @@ func isDateAfterOrEqual(date1, date2 string) (bool, error) {
 		return true, nil
 	}
 
-	// Проверяем равенство
+	// Check equality
 	year1, month1, err := ParseDate(date1)
 	if err != nil {
 		return false, err
@@ -72,7 +72,7 @@ func isDateAfterOrEqual(date1, date2 string) (bool, error) {
 	return year1 == year2 && month1 == month2, nil
 }
 
-// isDateBeforeOrEqual проверяет что date1 <= date2
+// isDateBeforeOrEqual checks that date1 <= date2
 func isDateBeforeOrEqual(date1, date2 string) (bool, error) {
 	after, err := isDateAfter(date1, date2)
 	if err != nil {
@@ -81,7 +81,7 @@ func isDateBeforeOrEqual(date1, date2 string) (bool, error) {
 	return !after, nil
 }
 
-// ParseDate парсит строку MM-YYYY в год и месяц
+// ParseDate parses string MM-YYYY into year and month
 func ParseDate(date string) (year, month int, err error) {
 	parts := strings.Split(date, "-")
 	if len(parts) != 2 {
@@ -101,7 +101,7 @@ func ParseDate(date string) (year, month int, err error) {
 	return year, month, nil
 }
 
-// ValidateSubscriptionDates валидация дат подписки для использования в сервисе
+// ValidateSubscriptionDates validates startDate and endDate
 func ValidateSubscriptionDates(startDate string, endDate *string) error {
 	if err := ValidateDateFormat(startDate); err != nil {
 		return err

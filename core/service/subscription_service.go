@@ -19,7 +19,7 @@ func NewSubscriptionService(repo ports.SubscriptionRepository) ports.Subscriptio
 }
 
 func (s *subscriptionService) CreateSubscription(ctx context.Context, req *ports.CreateSubscriptionRequest) (*domain.Subscription, error) {
-	id := domain.GenerateUUID()
+	id := uuid.New()
 
 	subscription, err := domain.NewSubscription(
 		id,
@@ -45,7 +45,6 @@ func (s *subscriptionService) GetSubscription(ctx context.Context, id uuid.UUID)
 }
 
 func (s *subscriptionService) ListSubscriptions(ctx context.Context, filter ports.SubscriptionFilter, pagination ports.Pagination) ([]*domain.Subscription, *ports.PaginationMetadata, error) {
-	// Валидация пагинации
 	if pagination.Page < 1 {
 		pagination.Page = 1
 	}
@@ -55,35 +54,29 @@ func (s *subscriptionService) ListSubscriptions(ctx context.Context, filter port
 		pagination.Limit = 100
 	}
 
-	// Валидация фильтров
 	if err := validateFilter(filter); err != nil {
 		return nil, nil, domain.ErrValidationFailed
 	}
 
-	// Вызов репозитория
 	return s.repo.List(ctx, filter, pagination)
 }
 
 func (s *subscriptionService) UpdateSubscription(ctx context.Context, id uuid.UUID, req *ports.UpdateSubscriptionRequest) (*domain.Subscription, error) {
-	// Получаем существующую подписку
 	existing, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	// Валидация данных
 	if err = domain.ValidateSubscriptionDates(req.StartDate, req.EndDate); err != nil {
 		return nil, domain.ErrInvalidDateRange
 	}
 
-	// Обновляем поля
 	existing.ServiceName = req.ServiceName
 	existing.Price = req.Price
 	existing.UserID = req.UserID
 	existing.StartDate = req.StartDate
 	existing.EndDate = req.EndDate
 
-	// Сохраняем изменения
 	if err = s.repo.Update(ctx, existing); err != nil {
 		return nil, err
 	}
@@ -146,32 +139,20 @@ func (s *subscriptionService) DeleteSubscription(ctx context.Context, id uuid.UU
 }
 
 func (s *subscriptionService) GetTotalCost(ctx context.Context, req *ports.TotalCostRequest) (*ports.TotalCostResponse, error) {
-	// Валидация дат
-	if err := domain.ValidateDateFormat(req.StartDate); err != nil {
-		return nil, domain.ErrInvalidDateformat
-	}
-	if err := domain.ValidateDateFormat(req.EndDate); err != nil {
-		return nil, domain.ErrInvalidDateformat
-	}
-
-	// Проверка корректности диапазона дат
-	if err := domain.ValidateDateRange(req.StartDate, req.EndDate); err != nil {
+	if err := domain.ValidateSubscriptionDates(req.StartDate, &req.EndDate); err != nil {
 		return nil, domain.ErrInvalidDateRange
 	}
 
-	// Создаем фильтр для репозитория
 	filter := ports.SubscriptionFilter{
 		UserIDs:      req.UserIDs,
 		ServiceNames: req.ServiceNames,
 	}
 
-	// Вычисляем общую стоимость
 	totalCost, err := s.repo.GetTotalCost(ctx, req.StartDate, req.EndDate, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	// Формируем ответ
 	return &ports.TotalCostResponse{
 		TotalCost: totalCost,
 		Period: ports.Period{

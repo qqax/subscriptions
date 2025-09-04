@@ -27,7 +27,7 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Debug().Msg("Health check passed")
 }
 
-// ReadyCheckHandler проверяет готовность всех зависимостей
+// ReadyCheckHandler checks the readiness of all dependencies
 func ReadyCheckHandler(dbClient *postgres.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -41,7 +41,6 @@ func ReadyCheckHandler(dbClient *postgres.Client) http.HandlerFunc {
 			"services":  map[string]interface{}{},
 		}
 
-		// Проверяем соединение с БД
 		if err := dbClient.HealthCheck(); err != nil {
 			logger.Error().Err(err).Msg("Database health check failed")
 			response["status"] = "degraded"
@@ -60,7 +59,6 @@ func ReadyCheckHandler(dbClient *postgres.Client) http.HandlerFunc {
 			}
 		}
 
-		// Устанавливаем соответствующий HTTP статус
 		if response["status"] == "degraded" {
 			w.WriteHeader(http.StatusServiceUnavailable)
 		} else {
@@ -72,7 +70,7 @@ func ReadyCheckHandler(dbClient *postgres.Client) http.HandlerFunc {
 	}
 }
 
-// LiveCheckHandler проверяет что приложение работает (без зависимостей)
+// LiveCheckHandler checks that the application is running (no dependencies)
 func LiveCheckHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -87,7 +85,7 @@ func LiveCheckHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// DBStatsHandler возвращает статистику БД (для админов)
+// DBStatsHandler returns DB statistics
 func DBStatsHandler(dbClient *postgres.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -100,7 +98,6 @@ func DBStatsHandler(dbClient *postgres.Client) http.HandlerFunc {
 			"database":  map[string]interface{}{},
 		}
 
-		// Получаем статистику подключений
 		sqlDB, err := dbClient.DB.DB()
 		if err == nil {
 			stats["database"].(map[string]interface{})["connections"] = map[string]interface{}{
@@ -113,7 +110,6 @@ func DBStatsHandler(dbClient *postgres.Client) http.HandlerFunc {
 			}
 		}
 
-		// Проверяем доступность БД
 		if err = dbClient.HealthCheck(); err != nil {
 			stats["database"].(map[string]interface{})["status"] = "down"
 			stats["database"].(map[string]interface{})["error"] = err.Error()

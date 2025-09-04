@@ -63,13 +63,12 @@ func (r *SubscriptionRepository) GetByID(ctx context.Context, id uuid.UUID) (*do
 	return ToDomain(&dbSub)
 }
 
-// List возвращает подписки с фильтрацией и пагинацией
+// List returns subscriptions with filtering and pagination
 func (r *SubscriptionRepository) List(ctx context.Context, filter ports.SubscriptionFilter, pagination ports.Pagination) ([]*domain.Subscription, *ports.PaginationMetadata, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	query := r.db.WithContext(ctx).Model(&models.Subscription{})
 
-	// Применяем фильтры
 	if len(filter.UserIDs) > 0 {
 		query = query.Where("user_id IN ?", filter.UserIDs)
 	}
@@ -80,14 +79,11 @@ func (r *SubscriptionRepository) List(ctx context.Context, filter ports.Subscrip
 		query = applyDateFilter(query, *filter.StartDateFrom, filter.StartDateTo)
 	}
 
-	// Получаем общее количество для пагинации
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		log.Error().Err(err).Msg("Failed to count subscriptions")
 		return nil, nil, domain.ErrInternal
 	}
-
-	// Применяем пагинацию
 
 	offset := (pagination.Page - 1) * pagination.Limit
 	query = applyPagination(query, offset, pagination.Limit)
@@ -99,7 +95,6 @@ func (r *SubscriptionRepository) List(ctx context.Context, filter ports.Subscrip
 		return nil, nil, domain.ErrInternal
 	}
 
-	// Конвертируем в domain модели (изменили тип возвращаемого значения)
 	domainSubs := make([]*domain.Subscription, len(dbSubs))
 	for i, dbSub := range dbSubs {
 		domainSub, err := ToDomain(&dbSub)
@@ -110,7 +105,6 @@ func (r *SubscriptionRepository) List(ctx context.Context, filter ports.Subscrip
 		domainSubs[i] = domainSub
 	}
 
-	// Метаданные пагинации
 	totalPages := calculateTotalPages(int(total), pagination.Limit)
 
 	paginationMeta := &ports.PaginationMetadata{
@@ -124,7 +118,7 @@ func (r *SubscriptionRepository) List(ctx context.Context, filter ports.Subscrip
 	return domainSubs, paginationMeta, nil
 }
 
-// Update обновляет подписку
+// Update renews subscription
 func (r *SubscriptionRepository) Update(ctx context.Context, subscription *domain.Subscription) error {
 	log := logger.WithRequestID(getRequestID(ctx))
 
@@ -144,7 +138,7 @@ func (r *SubscriptionRepository) Update(ctx context.Context, subscription *domai
 	return nil
 }
 
-// PartialUpdate частично обновляет подписку
+// PartialUpdate partially renews subscription
 func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID, updates map[string]interface{}) error {
 	log := logger.WithRequestID(getRequestID(ctx))
 
@@ -165,7 +159,7 @@ func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID
 	return nil
 }
 
-// Delete удаляет подписку
+// Delete deletes subscription
 func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	log := logger.WithRequestID(getRequestID(ctx))
 
@@ -184,17 +178,40 @@ func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error
 	return nil
 }
 
-// GetTotalCost вычисляет общую стоимость подписок
+// GetTotalCost calculates the total cost of subscriptions
 func (r *SubscriptionRepository) GetTotalCost(ctx context.Context, startDate, endDate string, filter ports.SubscriptionFilter) (int, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
+	startMonth, startYear, err := parseMMYYYY(startDate)
+	if err != nil {
+		return 0, err
+	}
+
+	endMonth, endYear, err := parseMMYYYY(endDate)
+	if err != nil {
+		return 0, err
+	}
+
+	startMonths := startYear*12 + startMonth
+	endMonths := endYear*12 + endMonth + 1
+
 	query := r.db.WithContext(ctx).Model(&models.Subscription{}).
-		Select("COALESCE(SUM(price), 0) as total_cost")
+		Select(`
+			SUM(
+					CASE
+						WHEN (end_year IS NOT NULL AND ? > end_year * 12 + end_month) OR (? < start_year * 12 + start_month)
+							THEN 0
+						ELSE
+							(
+								LEAST(COALESCE(end_year * 12 + end_month, ?), ?::bigint) -
+								GREATEST(start_year * 12 + start_month, ?::bigint)
+								) * price
+						END
+			) AS total_cost`,
+			startMonths, endMonths, endMonths, endMonths, startMonths)
 
 	query = buildWhereINCondition(query, "user_id", filter.UserIDs)
 	query = buildWhereINCondition(query, "service_name", filter.ServiceNames)
-
-	query = applyDateRangeFilter(query, startDate, endDate)
 
 	var totalCost int
 	result := query.Scan(&totalCost)
@@ -207,7 +224,7 @@ func (r *SubscriptionRepository) GetTotalCost(ctx context.Context, startDate, en
 	return totalCost, nil
 }
 
-// SubscriptionExists проверяет существование подписки
+// SubscriptionExists checks for the existence of a subscription
 func (r *SubscriptionRepository) SubscriptionExists(ctx context.Context, userID uuid.UUID, serviceName string) (bool, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 

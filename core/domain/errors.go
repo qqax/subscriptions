@@ -42,7 +42,7 @@ func NewDomainError(code int, message string) *DomainError {
 	}
 }
 
-// NewValidationError создает ошибку валидации с деталями
+// NewValidationError creates error with details
 func NewValidationError(field, reason string) *DomainError {
 	return &DomainError{
 		Code:    ValidationError,
@@ -55,7 +55,7 @@ func NewValidationError(field, reason string) *DomainError {
 	}
 }
 
-// NewValidationErrorWithDetails создает ошибку валидации с дополнительными деталями
+// NewValidationErrorWithDetails creates validation error with additional details
 func NewValidationErrorWithDetails(field, reason string, details map[string]interface{}) *DomainError {
 	if details == nil {
 		details = make(map[string]interface{})
@@ -70,30 +70,3 @@ func NewValidationErrorWithDetails(field, reason string, details map[string]inte
 		Details: details,
 	}
 }
-
-//// NewNotFoundError создает ошибку "не найдено"
-//func NewNotFoundError(resourceType, resourceID string) *DomainError {
-//	return &DomainError{
-//		Code:    NotFoundError,
-//		Message: resourceType + " not found",
-//		Details: map[string]interface{}{
-//			"resource_type": resourceType,
-//			"resource_id":   resourceID,
-//			"type":          "not_found",
-//		},
-//	}
-//}
-//
-//// NewDuplicateError создает ошибку дубликата
-//func NewDuplicateError(resourceType, field, value string) *DomainError {
-//	return &DomainError{
-//		Code:    DuplicateError,
-//		Message: resourceType + " with " + field + " '" + value + "' already exists",
-//		Details: map[string]interface{}{
-//			"resource_type": resourceType,
-//			"field":         field,
-//			"value":         value,
-//			"type":          "DuplicateError",
-//		},
-//	}
-//}

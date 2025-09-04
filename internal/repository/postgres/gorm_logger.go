@@ -6,7 +6,7 @@ import (
 	"time"
 
 	gormLogger "gorm.io/gorm/logger"
-	appLogger "subscription/internal/logger" // Алиас для вашего логгера
+	appLogger "subscription/internal/logger"
 )
 
 // ZerologLogger implements gorm.Logger.Interface for zerolog

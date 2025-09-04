@@ -1,4 +1,3 @@
-// internal/repository/postgres/client.go
 package postgres
 
 import (
