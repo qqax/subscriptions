@@ -63,3 +63,45 @@ ogen ogen --target internal/api/generated api/openapi.yaml
 betteralign -apply ./...
 
 
+# Простота использования через Makefile
+make dev        # Запуск для разработки
+make test       # Запуск тестов
+make deploy     # Деплой в прод
+
+make build      # Собрать образ
+make test       # Запустить тесты
+make up         # Запустить композ
+make deploy     # Деплой
+
+
+```bash
+# Запуск development окружения
+docker-compose up -d
+
+# Остановка
+docker-compose down
+
+# Просмотр логов
+docker-compose logs -f app
+
+# Пересборка
+docker-compose up -d --build
+
+# Зайти в контейнер с БД
+docker-compose exec postgres psql -U user -d app_db
+```
+
+## Production
+```bash
+# Сборка production образа
+docker build -t my-app:prod .
+
+# Запуск production контейнера
+docker run -d \
+-p 8080:8080 \
+--name my-app \
+--env-file .env.local \
+my-app:prod
+```
+
+

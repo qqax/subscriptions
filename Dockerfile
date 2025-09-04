@@ -1,8 +1,3 @@
-FROM ubuntu:latest
-LABEL authors="alexander"
-
-ENTRYPOINT ["top", "-b"]
-
 # Build stage
 FROM golang:1.25-alpine AS builder
 
@@ -16,7 +11,7 @@ RUN go mod download
 COPY . .
 
 # Собираем приложение
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/app
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
 
 # Final stage
 FROM alpine:3.18
@@ -29,9 +24,13 @@ RUN apk --no-cache add ca-certificates
 # Копируем бинарник из builder stage
 COPY --from=builder /app/main .
 
-# Копируем статические файлы, миграции и т.д.
+# Копируем статические файлы
 COPY ./migrations ./migrations
 COPY ./config ./config
+
+# Создаем non-root пользователя
+RUN adduser -D -u 1000 appuser
+USER appuser
 
 # Открываем порт
 EXPOSE 8080

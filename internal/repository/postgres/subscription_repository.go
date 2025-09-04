@@ -263,22 +263,3 @@ func (r *SubscriptionRepository) GetByUserAndService(ctx context.Context, userID
 
 	return domainSub, nil // Теперь возвращаем domain.Subscription
 }
-
-// Вспомогательные методы
-
-func applyDateFilter(query *gorm.DB, startDateFrom string, startDateTo *string) *gorm.DB {
-	// Реализация фильтрации по датам
-	// Нужно конвертировать MM-YYYY в условия БД
-	return query
-}
-
-func applyDateRangeFilter(query *gorm.DB, startDate, endDate string) *gorm.DB {
-	// Реализация фильтрации по диапазону дат
-	// Нужно конвертировать MM-YYYY в условия БД
-	return query
-}
-
-func getRequestID(ctx context.Context) string {
-	// Реализация получения request ID из context
-	return "unknown"
-}

@@ -55,16 +55,16 @@ func main() {
 	}
 
 	// Repository
-	repo := postgres.NewSubscriptionRepository(dbClient.DB)
+	repoAdapter := postgres.NewSubscriptionRepository(dbClient.DB)
 
 	// Сервис (ядро)
-	subscriptionService := service.NewSubscriptionService(repo)
+	subscriptionService := service.NewSubscriptionService(repoAdapter)
 
-	// Ogen adapter
-	adapter := ogenAdapter.NewOgenAdapter(subscriptionService)
+	// Ogen httpAdapter
+	httpAdapter := ogenAdapter.NewOgenAdapter(subscriptionService)
 
 	// Create ogen server.
-	server, err := ogenServer.NewServer(adapter)
+	server, err := ogenServer.NewServer(httpAdapter)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to create ogen server")
 	}

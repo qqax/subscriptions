@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Go приложение (development)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - go-modules:/go/pkg/mod
+    environment:
+      - ENV=development
+      - LOG_LEVEL=${LOG_LEVEL}
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=${SERVER_PORT}
+      - DB_HOST=postgres
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+
+  # PostgreSQL база данных
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    env_file:
+      - .env.dev
+    restart: unless-stopped
+
+#  # pgAdmin для управления БД (опционально)
+#  pgadmin:
+#    image: dpage/pgadmin4
+#    environment:
+#      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+#      - PGADMIN_DEFAULT_PASSWORD=admin
+#    ports:
+#      - "5050:80"
+#    depends_on:
+#      - postgres
+#    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  go-modules:
+
+networks:
+  default:
+    driver: bridge

@@ -1,9 +1,6 @@
 package postgres
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
 	"subscription/internal/repository/postgres/models"
 
 	"subscription/core/domain"
@@ -55,28 +52,4 @@ func ToDomain(dbSub *models.Subscription) (*domain.Subscription, error) {
 		startDate,
 		endDate,
 	)
-}
-
-// Helper functions
-func parseMMYYYY(date string) (month, year int, err error) {
-	parts := strings.Split(date, "-")
-	if len(parts) != 2 {
-		return 0, 0, domain.ErrInvalidDateformat
-	}
-
-	month, err = strconv.Atoi(parts[0])
-	if err != nil || month < 1 || month > 12 {
-		return 0, 0, domain.ErrInvalidDateformat
-	}
-
-	year, err = strconv.Atoi(parts[1])
-	if err != nil || year < 2020 {
-		return 0, 0, domain.ErrInvalidDateformat
-	}
-
-	return month, year, nil
-}
-
-func formatMMYYYY(month, year int) string {
-	return fmt.Sprintf("%02d-%d", month, year)
 }
