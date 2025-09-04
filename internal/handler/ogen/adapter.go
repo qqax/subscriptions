@@ -119,8 +119,6 @@ func (h *OgenAdapter) SubscriptionsIDPatch(ctx context.Context, req *api.Subscri
 	domainReq := &ports.PartialUpdateRequest{
 		ServiceName: getStringPtrFromOpt(req.ServiceName),
 		Price:       getIntPtrFromOpt(req.Price),
-		UserID:      getStringPtrFromUUIDOpt(req.UserID),
-		StartDate:   getStringPtrFromOpt(req.StartDate),
 		EndDate:     getStringPtrFromOptNil(req.EndDate),
 	}
 

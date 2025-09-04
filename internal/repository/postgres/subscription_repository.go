@@ -42,6 +42,7 @@ func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domai
 
 		return uuid.Nil, domain.ErrInternal
 	}
+
 	return dbSub.ID, nil
 }
 

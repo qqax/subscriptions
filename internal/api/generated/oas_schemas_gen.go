@@ -797,8 +797,6 @@ func (s *SubscriptionCreate) SetEndDate(val OptNilString) {
 type SubscriptionPatch struct {
 	ServiceName OptString    `json:"service_name"`
 	Price       OptInt32     `json:"price"`
-	UserID      OptUUID      `json:"user_id"`
-	StartDate   OptString    `json:"start_date"`
 	EndDate     OptNilString `json:"end_date"`
 }
 
@@ -810,16 +808,6 @@ func (s *SubscriptionPatch) GetServiceName() OptString {
 // GetPrice returns the value of Price.
 func (s *SubscriptionPatch) GetPrice() OptInt32 {
 	return s.Price
-}
-
-// GetUserID returns the value of UserID.
-func (s *SubscriptionPatch) GetUserID() OptUUID {
-	return s.UserID
-}
-
-// GetStartDate returns the value of StartDate.
-func (s *SubscriptionPatch) GetStartDate() OptString {
-	return s.StartDate
 }
 
 // GetEndDate returns the value of EndDate.
@@ -835,16 +823,6 @@ func (s *SubscriptionPatch) SetServiceName(val OptString) {
 // SetPrice sets the value of Price.
 func (s *SubscriptionPatch) SetPrice(val OptInt32) {
 	s.Price = val
-}
-
-// SetUserID sets the value of UserID.
-func (s *SubscriptionPatch) SetUserID(val OptUUID) {
-	s.UserID = val
-}
-
-// SetStartDate sets the value of StartDate.
-func (s *SubscriptionPatch) SetStartDate(val OptString) {
-	s.StartDate = val
 }
 
 // SetEndDate sets the value of EndDate.

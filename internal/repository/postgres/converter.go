@@ -1,9 +1,8 @@
 package postgres
 
 import (
-	"subscription/internal/repository/postgres/models"
-
 	"subscription/core/domain"
+	"subscription/internal/repository/postgres/models"
 )
 
 // ToDBModel converts domain Subscription to DB model
@@ -14,6 +13,7 @@ func ToDBModel(domainSub *domain.Subscription) (*models.Subscription, error) {
 	}
 
 	dbSub := &models.Subscription{
+		ID:          domainSub.ID,
 		ServiceName: domainSub.ServiceName,
 		Price:       domainSub.Price,
 		UserID:      domainSub.UserID,
@@ -44,6 +44,7 @@ func ToDomain(dbSub *models.Subscription) (*domain.Subscription, error) {
 	}
 
 	return domain.NewSubscription(
+		dbSub.ID,
 		dbSub.ServiceName,
 		dbSub.Price,
 		dbSub.UserID,

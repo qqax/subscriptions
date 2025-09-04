@@ -19,7 +19,10 @@ func NewSubscriptionService(repo ports.SubscriptionRepository) ports.Subscriptio
 }
 
 func (s *subscriptionService) CreateSubscription(ctx context.Context, req *ports.CreateSubscriptionRequest) (*domain.Subscription, error) {
+	id := domain.GenerateUUID()
+
 	subscription, err := domain.NewSubscription(
+		id,
 		req.ServiceName,
 		req.Price,
 		req.UserID,
@@ -89,31 +92,47 @@ func (s *subscriptionService) UpdateSubscription(ctx context.Context, id uuid.UU
 }
 
 func (s *subscriptionService) PartialUpdateSubscription(ctx context.Context, id uuid.UUID, req *ports.PartialUpdateRequest) (*domain.Subscription, error) {
-	// Создаем map для обновлений
 	updates := make(map[string]interface{})
+
+	if req.ServiceName != nil {
+		updates["service_name"] = *req.ServiceName
+	}
 
 	if req.Price != nil {
 		updates["price"] = *req.Price
 	}
 
-	if req.EndDate != nil {
-		if *req.EndDate != "" {
-			if err := validateDateFormat(*req.EndDate); err != nil {
-				return nil, domain.ErrInvalidDateformat
-			}
+	if req.EndDate != nil && *req.EndDate != "" {
+		if err := validateDateFormat(*req.EndDate); err != nil {
+			return nil, domain.ErrInvalidDateformat
+
 		}
-		updates["end_date"] = *req.EndDate
+
+		endYear, endMonth, err := domain.ParseDate(*req.EndDate)
+		if err != nil {
+			return nil, err
+		}
+
+		subscription, err := s.repo.GetByID(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		err = validateDateRange(subscription.StartDate, *req.EndDate)
+		if err != nil {
+			return nil, err
+		}
+
+		updates["end_month"] = endMonth
+		updates["end_year"] = endYear
 	}
 
-	// Добавляем updated_at
 	updates["updated_at"] = time.Now()
 
-	// Вызываем репозиторий для частичного обновления
 	if err := s.repo.PartialUpdate(ctx, id, updates); err != nil {
 		return nil, err
 	}
 
-	// Возвращаем обновленную подписку
 	return s.repo.GetByID(ctx, id)
 }
 

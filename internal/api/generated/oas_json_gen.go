@@ -1077,18 +1077,6 @@ func (s *SubscriptionPatch) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
-		if s.UserID.Set {
-			e.FieldStart("user_id")
-			s.UserID.Encode(e)
-		}
-	}
-	{
-		if s.StartDate.Set {
-			e.FieldStart("start_date")
-			s.StartDate.Encode(e)
-		}
-	}
-	{
 		if s.EndDate.Set {
 			e.FieldStart("end_date")
 			s.EndDate.Encode(e)
@@ -1096,12 +1084,10 @@ func (s *SubscriptionPatch) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfSubscriptionPatch = [5]string{
+var jsonFieldsNameOfSubscriptionPatch = [3]string{
 	0: "service_name",
 	1: "price",
-	2: "user_id",
-	3: "start_date",
-	4: "end_date",
+	2: "end_date",
 }
 
 // Decode decodes SubscriptionPatch from json.
@@ -1131,26 +1117,6 @@ func (s *SubscriptionPatch) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"price\"")
-			}
-		case "user_id":
-			if err := func() error {
-				s.UserID.Reset()
-				if err := s.UserID.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"user_id\"")
-			}
-		case "start_date":
-			if err := func() error {
-				s.StartDate.Reset()
-				if err := s.StartDate.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"start_date\"")
 			}
 		case "end_date":
 			if err := func() error {

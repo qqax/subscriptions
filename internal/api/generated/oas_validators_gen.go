@@ -138,32 +138,6 @@ func (s *SubscriptionPatch) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if value, ok := s.StartDate.Get(); ok {
-			if err := func() error {
-				if err := (validate.String{
-					MinLength:    0,
-					MinLengthSet: false,
-					MaxLength:    0,
-					MaxLengthSet: false,
-					Email:        false,
-					Hostname:     false,
-					Regex:        regexMap["^\\d{2}-\\d{4}$"],
-				}).Validate(string(value)); err != nil {
-					return errors.Wrap(err, "string")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "start_date",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if value, ok := s.EndDate.Get(); ok {
 			if err := func() error {
 				if err := (validate.String{

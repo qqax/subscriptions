@@ -18,8 +18,9 @@ type Subscription struct {
 }
 
 // NewSubscription creates a new Subscription with validation
-func NewSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, error) {
+func NewSubscription(id uuid.UUID, serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, error) {
 	sub := &Subscription{
+		ID:          id,
 		ServiceName: serviceName,
 		Price:       price,
 		UserID:      userID,
@@ -112,11 +113,12 @@ func (s *Subscription) CalculateCostForPeriod(startPeriod, endPeriod string) (in
 type SubscriptionFactory struct{}
 
 func (f *SubscriptionFactory) CreateSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, error) {
-	sub, err := NewSubscription(serviceName, price, userID, startDate, endDate)
+	id := GenerateUUID()
+
+	sub, err := NewSubscription(id, serviceName, price, userID, startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
 
-	sub.ID = generateUUID()
 	return sub, nil
 }

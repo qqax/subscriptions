@@ -505,12 +505,6 @@ components:
         price:
           type: integer
           format: int32
-        user_id:
-          type: string
-          format: uuid
-        start_date:
-          type: string
-          pattern: '^\d{2}-\d{4}$'
         end_date:
           type: string
           pattern: '^\d{2}-\d{4}$'

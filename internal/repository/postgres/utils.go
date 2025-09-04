@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 	"subscription/internal/logger"
@@ -101,7 +102,7 @@ func parseMMYYYY(date string) (month, year int, err error) {
 // formatMMYYYY форматирует месяц и год в MM-YYYY
 func formatMMYYYY(month, year int) string {
 	return strings.Join([]string{
-		strconv.Itoa(month),
+		fmt.Sprintf("%02d", month),
 		strconv.Itoa(year),
 	}, "-")
 }

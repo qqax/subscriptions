@@ -30,12 +30,12 @@ func validateDateRange(startDate, endDate string) error {
 
 // isDateAfter проверяет что date1 > date2
 func isDateAfter(date1, date2 string) (bool, error) {
-	year1, month1, err := parseDate(date1)
+	year1, month1, err := ParseDate(date1)
 	if err != nil {
 		return false, NewValidationError("date", "invalid first date: "+err.Error())
 	}
 
-	year2, month2, err := parseDate(date2)
+	year2, month2, err := ParseDate(date2)
 	if err != nil {
 		return false, NewValidationError("date", "invalid second date: "+err.Error())
 	}
@@ -60,12 +60,12 @@ func isDateAfterOrEqual(date1, date2 string) (bool, error) {
 	}
 
 	// Проверяем равенство
-	year1, month1, err := parseDate(date1)
+	year1, month1, err := ParseDate(date1)
 	if err != nil {
 		return false, err
 	}
 
-	year2, month2, err := parseDate(date2)
+	year2, month2, err := ParseDate(date2)
 	if err != nil {
 		return false, err
 	}
@@ -82,8 +82,8 @@ func isDateBeforeOrEqual(date1, date2 string) (bool, error) {
 	return !after, nil
 }
 
-// parseDate парсит строку MM-YYYY в год и месяц
-func parseDate(date string) (year, month int, err error) {
+// ParseDate парсит строку MM-YYYY в год и месяц
+func ParseDate(date string) (year, month int, err error) {
 	parts := strings.Split(date, "-")
 	if len(parts) != 2 {
 		return 0, 0, NewValidationError("date_format", "invalid format, expected MM-YYYY")
