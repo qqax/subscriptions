@@ -30,7 +30,7 @@ func (s *subscriptionService) CreateSubscription(ctx context.Context, req *ports
 		return nil, err
 	}
 
-	if err = s.repo.Create(ctx, subscription); err != nil {
+	if subscription.ID, err = s.repo.Create(ctx, subscription); err != nil {
 		return nil, err
 	}
 

@@ -25,10 +25,10 @@ func NewSubscriptionRepository(db *gorm.DB) ports.SubscriptionRepository {
 }
 
 // Create creates new subscription
-func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domain.Subscription) error {
+func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domain.Subscription) (uuid.UUID, error) {
 	dbSub, err := ToDBModel(subscription)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
 	result := r.db.WithContext(ctx).Create(dbSub)
@@ -37,12 +37,12 @@ func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domai
 
 		var pgErr *pgconn.PgError
 		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" {
-			return domain.ErrDuplicateSubscription
+			return uuid.Nil, domain.ErrDuplicateSubscription
 		}
 
-		return domain.ErrInternal
+		return uuid.Nil, domain.ErrInternal
 	}
-	return nil
+	return dbSub.ID, nil
 }
 
 // GetByID returns subscription by ID

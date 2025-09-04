@@ -9,7 +9,7 @@ import (
 // SubscriptionRepository defines the interface for subscription data operations
 type SubscriptionRepository interface {
 	// Create creates a new subscription
-	Create(ctx context.Context, subscription *domain.Subscription) error
+	Create(ctx context.Context, subscription *domain.Subscription) (uuid.UUID, error)
 
 	// GetByID returns a subscription by its ID
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.Subscription, error)
