@@ -141,7 +141,7 @@ func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID
 
 	if result.RowsAffected == 0 {
 		log.Debug().Str("subscription_id", id.String()).Msg("Subscription not found for partial update")
-		return ports.ErrSubscriptionNotFound
+		return domain.ErrSubscriptionNotFound
 	}
 
 	log.Info().Str("subscription_id", id.String()).Msg("Subscription partially updated successfully")
@@ -160,7 +160,7 @@ func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error
 
 	if result.RowsAffected == 0 {
 		log.Debug().Str("subscription_id", id.String()).Msg("Subscription not found for deletion")
-		return ports.ErrSubscriptionNotFound
+		return domain.ErrSubscriptionNotFound
 	}
 
 	log.Info().Str("subscription_id", id.String()).Msg("Subscription deleted successfully")
@@ -238,7 +238,7 @@ func (r *SubscriptionRepository) GetByUserAndService(ctx context.Context, userID
 				Str("user_id", userID.String()).
 				Str("service_name", serviceName).
 				Msg("Subscription not found")
-			return nil, ports.ErrSubscriptionNotFound
+			return nil, domain.ErrSubscriptionNotFound
 		}
 		log.Error().Err(result.Error).
 			Str("user_id", userID.String()).

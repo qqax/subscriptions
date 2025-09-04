@@ -38,12 +38,8 @@ func (h *OgenAdapter) SubscriptionsGet(ctx context.Context, params api.Subscript
 	// Call domain service
 	subscriptions, paginationMeta, err := h.service.ListSubscriptions(ctx, filter, pagination)
 	if err != nil {
-		msg := "Failed to list server"
-		log.Error().Err(err).Msg(msg)
-		return &api.SubscriptionsGetInternalServerError{
-			Error:   err.Error(),
-			Message: msg,
-		}, err
+		log.Error().Err(err).Msg("Failed to list server")
+		return convertSubscriptionsGetError(err), nil
 	}
 
 	// Convert to ogen response
@@ -61,7 +57,7 @@ func (h *OgenAdapter) SubscriptionsPost(ctx context.Context, req *api.Subscripti
 
 	userID, err := uuid.Parse(req.UserID.String())
 	if err != nil {
-		return convertSubscriptionsPostError(ports.ErrInvalidUUID), nil
+		return convertSubscriptionsPostError(domain.ErrInvalidUUID), nil
 	}
 
 	// Convert ogen request to domain request
@@ -76,7 +72,6 @@ func (h *OgenAdapter) SubscriptionsPost(ctx context.Context, req *api.Subscripti
 	// Call domain service
 	subscription, err := h.service.CreateSubscription(ctx, domainReq)
 	if err != nil {
-
 		log.Error().Err(err).Msg("Failed to create subscription")
 		return convertSubscriptionsPostError(err), nil
 
@@ -259,66 +254,10 @@ func convertPaginationToOgen(meta *ports.PaginationMetadata) api.OptPagination {
 	}
 }
 
-func convertError(err error) *api.ErrorStatusCode {
-	// Проверка стандартных ошибок
-	switch {
-	case errors.Is(err, ports.ErrSubscriptionNotFound):
-		return &api.ErrorStatusCode{
-			StatusCode: 404,
-			Response: api.Error{
-				Error:   "not_found",
-				Message: err.Error(),
-			},
-		}
-	case errors.Is(err, ports.ErrInvalidDateformat),
-		errors.Is(err, ports.ErrInvalidUUID),
-		errors.Is(err, ports.ErrInvalidPrice),
-		errors.Is(err, ports.ErrStartDateAfterEndDate),
-		errors.Is(err, ports.ErrInvalidDateRange):
-		return &api.ErrorStatusCode{
-			StatusCode: 400,
-			Response: api.Error{
-				Error:   "validation_error",
-				Message: err.Error(),
-			},
-		}
-	case errors.Is(err, ports.ErrDuplicateSubscription):
-		return &api.ErrorStatusCode{
-			StatusCode: 409,
-			Response: api.Error{
-				Error:   "conflict",
-				Message: err.Error(),
-			},
-		}
-	default:
-		// Для кастомных DomainError
-		var domainErr *ports.DomainError
-		if errors.As(err, &domainErr) {
-			return &api.ErrorStatusCode{
-				StatusCode: getStatusCodeFromDomainError(domainErr),
-				Response: api.Error{
-					Error:   domainErr.Code,
-					Message: domainErr.Message,
-				},
-			}
-		}
-
-		// Любая другая ошибка
-		return &api.ErrorStatusCode{
-			StatusCode: 500,
-			Response: api.Error{
-				Error:   "internal_error",
-				Message: "Internal server error",
-			},
-		}
-	}
-}
-
 // Error conversion functions for each operation
 
 func convertSubscriptionsPostError(err error) *api.SubscriptionsPostBadRequest {
 	errorResponse := createErrorResponse(err)
-	// Просто приводим тип, поскольку SubscriptionsPostBadRequest это алиас к Error
 	return (*api.SubscriptionsPostBadRequest)(&errorResponse)
 }
 
@@ -369,15 +308,15 @@ func createErrorResponse(err error) api.Error {
 
 func getStatusCode(err error) int {
 	switch {
-	case errors.Is(err, ports.ErrSubscriptionNotFound):
+	case errors.Is(err, domain.ErrSubscriptionNotFound):
 		return 404
-	case errors.Is(err, ports.ErrInvalidDateformat),
-		errors.Is(err, ports.ErrInvalidUUID),
-		errors.Is(err, ports.ErrInvalidPrice),
-		errors.Is(err, ports.ErrStartDateAfterEndDate),
-		errors.Is(err, ports.ErrInvalidDateRange):
+	case errors.Is(err, domain.ErrInvalidDateformat),
+		errors.Is(err, domain.ErrInvalidUUID),
+		errors.Is(err, domain.ErrInvalidPrice),
+		errors.Is(err, domain.ErrStartDateAfterEndDate),
+		errors.Is(err, domain.ErrInvalidDateRange):
 		return 400
-	case errors.Is(err, ports.ErrDuplicateSubscription):
+	case errors.Is(err, domain.ErrDuplicateSubscription):
 		return 409
 	default:
 		return 500
@@ -386,19 +325,19 @@ func getStatusCode(err error) int {
 
 func getErrorCode(err error) string {
 	switch {
-	case errors.Is(err, ports.ErrSubscriptionNotFound):
+	case errors.Is(err, domain.ErrSubscriptionNotFound):
 		return "not_found"
-	case errors.Is(err, ports.ErrInvalidDateformat):
+	case errors.Is(err, domain.ErrInvalidDateformat):
 		return "invalid_date_format"
-	case errors.Is(err, ports.ErrInvalidUUID):
+	case errors.Is(err, domain.ErrInvalidUUID):
 		return "invalid_uuid"
-	case errors.Is(err, ports.ErrInvalidPrice):
+	case errors.Is(err, domain.ErrInvalidPrice):
 		return "invalid_price"
-	case errors.Is(err, ports.ErrStartDateAfterEndDate):
+	case errors.Is(err, domain.ErrStartDateAfterEndDate):
 		return "invalid_date_range"
-	case errors.Is(err, ports.ErrInvalidDateRange):
+	case errors.Is(err, domain.ErrInvalidDateRange):
 		return "invalid_date_range"
-	case errors.Is(err, ports.ErrDuplicateSubscription):
+	case errors.Is(err, domain.ErrDuplicateSubscription):
 		return "duplicate_subscription"
 	default:
 		return "internal_error"
@@ -418,7 +357,7 @@ func (h *OgenAdapter) NewError(ctx context.Context, err error) *api.ErrorStatusC
 		Response:   createErrorResponse(err),
 	}
 }
-func getStatusCodeFromDomainError(err *ports.DomainError) int {
+func getStatusCodeFromDomainError(err *domain.DomainError) int {
 	switch err.Code {
 	case "validation_error", "invalid_input":
 		return 400

@@ -1,10 +1,8 @@
-// core/service/subscription_service.go
 package service
 
 import (
 	"context"
 	"github.com/google/uuid"
-	"regexp"
 	"subscription/core/domain"
 	"time"
 
@@ -21,7 +19,6 @@ func NewSubscriptionService(repo ports.SubscriptionRepository) ports.Subscriptio
 }
 
 func (s *subscriptionService) CreateSubscription(ctx context.Context, req *ports.CreateSubscriptionRequest) (*domain.Subscription, error) {
-	// Используем domain модель вместо ports
 	subscription, err := domain.NewSubscription(
 		req.ServiceName,
 		req.Price,
@@ -33,7 +30,7 @@ func (s *subscriptionService) CreateSubscription(ctx context.Context, req *ports
 		return nil, err
 	}
 
-	if err := s.repo.Create(ctx, subscription); err != nil {
+	if err = s.repo.Create(ctx, subscription); err != nil {
 		return nil, err
 	}
 
@@ -64,9 +61,35 @@ func (s *subscriptionService) ListSubscriptions(ctx context.Context, filter port
 	return s.repo.List(ctx, filter, pagination)
 }
 
-// Валидация фильтров
+// validateFilter валидация параметров фильтрации
 func validateFilter(filter ports.SubscriptionFilter) error {
-	// Можно добавить валидацию дат, форматов и т.д.
+	// Валидация UUID в UserIDs
+	for _, userID := range filter.UserIDs {
+		if userID == uuid.Nil {
+			return domain.NewValidationError("user_ids", "contains invalid UUID format")
+		}
+	}
+
+	// Валидация дат если они указаны
+	if filter.StartDateFrom != nil {
+		if err := validateDateFormat(*filter.StartDateFrom); err != nil {
+			return domain.NewValidationError("start_date_from", "invalid date format, expected MM-YYYY")
+		}
+	}
+
+	if filter.StartDateTo != nil {
+		if err := validateDateFormat(*filter.StartDateTo); err != nil {
+			return domain.NewValidationError("start_date_to", "invalid date format, expected MM-YYYY")
+		}
+	}
+
+	// Валидация диапазона дат если обе даты указаны
+	if filter.StartDateFrom != nil && filter.StartDateTo != nil {
+		if err := validateDateRange(*filter.StartDateFrom, *filter.StartDateTo); err != nil {
+			return domain.NewValidationError("date_range", "start date cannot be after end date")
+		}
+	}
+
 	return nil
 }
 
@@ -150,10 +173,10 @@ func (s *subscriptionService) DeleteSubscription(ctx context.Context, id uuid.UU
 func (s *subscriptionService) GetTotalCost(ctx context.Context, req *ports.TotalCostRequest) (*ports.TotalCostResponse, error) {
 	// Валидация дат
 	if err := validateDateFormat(req.StartDate); err != nil {
-		return nil, ports.ErrInvalidDateformat
+		return nil, domain.ErrInvalidDateformat
 	}
 	if err := validateDateFormat(req.EndDate); err != nil {
-		return nil, ports.ErrInvalidDateformat
+		return nil, domain.ErrInvalidDateformat
 	}
 
 	// Проверка корректности диапазона дат
@@ -185,35 +208,4 @@ func (s *subscriptionService) GetTotalCost(ctx context.Context, req *ports.Total
 			ServiceNames: req.ServiceNames,
 		},
 	}, nil
-}
-
-// Helper functions
-func validateDateFormat(date string) error {
-	matched, _ := regexp.MatchString(`^(0[1-9]|1[0-2])-20\d{2}$`, date)
-	if !matched {
-		return ports.ErrInvalidDateformat
-	}
-	return nil
-}
-
-func validateDateRange(startDate, endDate string) error {
-	if startDate > endDate {
-		return ports.ErrStartDateAfterEndDate
-	}
-	return nil
-}
-
-func validateSubscriptionDates(startDate string, endDate *string) error {
-	if err := validateDateFormat(startDate); err != nil {
-		return err
-	}
-	if endDate != nil {
-		if err := validateDateFormat(*endDate); err != nil {
-			return err
-		}
-		if err := validateDateRange(startDate, *endDate); err != nil {
-			return err
-		}
-	}
-	return nil
 }

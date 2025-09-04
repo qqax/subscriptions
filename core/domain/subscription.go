@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"regexp"
 	"time"
 )
 
@@ -72,13 +71,13 @@ func (s *Subscription) Validate() error {
 	return nil
 }
 
-// IsActive checks if the subscription is currently active based on provided date
+// IsActive checks if the subscription is currently active based on the provided date
 func (s *Subscription) IsActive(referenceDate string) (bool, error) {
 	if err := validateDateFormat(referenceDate); err != nil {
 		return false, err
 	}
 
-	// Subscription is active if reference date is between start and end date
+	// Subscription is active if the reference date is between start and end date
 	// or if there's no end date and reference date is after start date
 	refAfterStart, err := isDateAfterOrEqual(referenceDate, s.StartDate)
 	if err != nil {
@@ -114,55 +113,13 @@ func (s *Subscription) CalculateCostForPeriod(startPeriod, endPeriod string) (in
 		subEnd = &endPeriod
 	}
 
-	// Find overlapping months between subscription period and requested period
+	// Find overlapping months between a subscription period and requested period
 	overlapMonths, err := calculateOverlapMonths(subStart, *subEnd, startPeriod, endPeriod)
 	if err != nil {
 		return 0, err
 	}
 
 	return overlapMonths * s.Price, nil
-}
-
-// Helper functions
-func validateDateFormat(date string) error {
-	matched, _ := regexp.MatchString(`^(0[1-9]|1[0-2])-20\d{2}$`, date)
-	if !matched {
-		return errors.New("date must be in MM-YYYY format (e.g., 12-2024)")
-	}
-	return nil
-}
-
-func validateDateRange(startDate, endDate string) error {
-	startAfterEnd, err := isDateAfter(startDate, endDate)
-	if err != nil {
-		return err
-	}
-	if startAfterEnd {
-		return errors.New("start date cannot be after end date")
-	}
-	return nil
-}
-
-func isDateAfter(date1, date2 string) (bool, error) {
-	// Convert MM-YYYY to comparable format (YYYYMM)
-	// Implementation depends on date comparison logic
-	return false, nil
-}
-
-func isDateAfterOrEqual(date1, date2 string) (bool, error) {
-	// Implementation for date comparison
-	return false, nil
-}
-
-func isDateBeforeOrEqual(date1, date2 string) (bool, error) {
-	// Implementation for date comparison
-	return false, nil
-}
-
-func calculateOverlapMonths(subStart, subEnd, periodStart, periodEnd string) (int, error) {
-	// Calculate number of overlapping months between two periods
-	// This is a simplified implementation
-	return 1, nil
 }
 
 // SubscriptionFactory creates server with generated ID
