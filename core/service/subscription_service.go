@@ -72,7 +72,7 @@ func (s *subscriptionService) UpdateSubscription(ctx context.Context, id uuid.UU
 	}
 
 	// Валидация данных
-	if err = validateSubscriptionDates(req.StartDate, req.EndDate); err != nil {
+	if err = domain.ValidateSubscriptionDates(req.StartDate, req.EndDate); err != nil {
 		return nil, domain.ErrInvalidDateRange
 	}
 
@@ -103,7 +103,7 @@ func (s *subscriptionService) PartialUpdateSubscription(ctx context.Context, id 
 	}
 
 	if req.EndDate != nil && *req.EndDate != "" {
-		if err := validateDateFormat(*req.EndDate); err != nil {
+		if err := domain.ValidateDateFormat(*req.EndDate); err != nil {
 			return nil, domain.ErrInvalidDateformat
 
 		}
@@ -118,7 +118,7 @@ func (s *subscriptionService) PartialUpdateSubscription(ctx context.Context, id 
 			return nil, err
 		}
 
-		err = validateDateRange(subscription.StartDate, *req.EndDate)
+		err = domain.ValidateDateRange(subscription.StartDate, *req.EndDate)
 		if err != nil {
 			return nil, err
 		}
@@ -147,15 +147,15 @@ func (s *subscriptionService) DeleteSubscription(ctx context.Context, id uuid.UU
 
 func (s *subscriptionService) GetTotalCost(ctx context.Context, req *ports.TotalCostRequest) (*ports.TotalCostResponse, error) {
 	// Валидация дат
-	if err := validateDateFormat(req.StartDate); err != nil {
+	if err := domain.ValidateDateFormat(req.StartDate); err != nil {
 		return nil, domain.ErrInvalidDateformat
 	}
-	if err := validateDateFormat(req.EndDate); err != nil {
+	if err := domain.ValidateDateFormat(req.EndDate); err != nil {
 		return nil, domain.ErrInvalidDateformat
 	}
 
 	// Проверка корректности диапазона дат
-	if err := validateDateRange(req.StartDate, req.EndDate); err != nil {
+	if err := domain.ValidateDateRange(req.StartDate, req.EndDate); err != nil {
 		return nil, domain.ErrInvalidDateRange
 	}
 

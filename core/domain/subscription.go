@@ -51,7 +51,7 @@ func (s *Subscription) Validate() error {
 		return NewValidationError("user ID", "user ID is required")
 	}
 
-	if err := validateSubscriptionDates(s.StartDate, s.EndDate); err != nil {
+	if err := ValidateSubscriptionDates(s.StartDate, s.EndDate); err != nil {
 		return err
 	}
 
@@ -60,7 +60,7 @@ func (s *Subscription) Validate() error {
 
 // IsActive checks if the subscription is currently active based on the provided date
 func (s *Subscription) IsActive(referenceDate string) (bool, error) {
-	if err := validateDateFormat(referenceDate); err != nil {
+	if err := ValidateDateFormat(referenceDate); err != nil {
 		return false, err
 	}
 
@@ -85,10 +85,10 @@ func (s *Subscription) IsActive(referenceDate string) (bool, error) {
 
 // CalculateCostForPeriod calculates the cost for a given period
 func (s *Subscription) CalculateCostForPeriod(startPeriod, endPeriod string) (int, error) {
-	if err := validateDateFormat(startPeriod); err != nil {
+	if err := ValidateDateFormat(startPeriod); err != nil {
 		return 0, err
 	}
-	if err := validateDateFormat(endPeriod); err != nil {
+	if err := ValidateDateFormat(endPeriod); err != nil {
 		return 0, err
 	}
 

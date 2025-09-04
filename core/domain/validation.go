@@ -1,4 +1,3 @@
-// core/domain/validation.go
 package domain
 
 import (
@@ -7,8 +6,8 @@ import (
 	"strings"
 )
 
-// validateDateFormat проверяет формат даты MM-YYYY
-func validateDateFormat(date string) error {
+// ValidateDateFormat проверяет формат даты MM-YYYY
+func ValidateDateFormat(date string) error {
 	matched, _ := regexp.MatchString(`^(0[1-9]|1[0-2])-20\d{2}$`, date)
 	if !matched {
 		return NewValidationError("date", "must be in MM-YYYY format (e.g., 12-2024)")
@@ -16,8 +15,8 @@ func validateDateFormat(date string) error {
 	return nil
 }
 
-// validateDateRange проверяет что startDate <= endDate
-func validateDateRange(startDate, endDate string) error {
+// ValidateDateRange проверяет что startDate <= endDate
+func ValidateDateRange(startDate, endDate string) error {
 	startAfterEnd, err := isDateAfter(startDate, endDate)
 	if err != nil {
 		return NewValidationError("date_range", "invalid date comparison: "+err.Error())
@@ -102,17 +101,17 @@ func ParseDate(date string) (year, month int, err error) {
 	return year, month, nil
 }
 
-// validateSubscriptionDates валидация дат подписки для использования в сервисе
-func validateSubscriptionDates(startDate string, endDate *string) error {
-	if err := validateDateFormat(startDate); err != nil {
+// ValidateSubscriptionDates валидация дат подписки для использования в сервисе
+func ValidateSubscriptionDates(startDate string, endDate *string) error {
+	if err := ValidateDateFormat(startDate); err != nil {
 		return err
 	}
 
 	if endDate != nil {
-		if err := validateDateFormat(*endDate); err != nil {
+		if err := ValidateDateFormat(*endDate); err != nil {
 			return err
 		}
-		if err := validateDateRange(startDate, *endDate); err != nil {
+		if err := ValidateDateRange(startDate, *endDate); err != nil {
 			return err
 		}
 	}
