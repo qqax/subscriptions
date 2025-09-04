@@ -112,6 +112,13 @@ func (c *Client) Close() error {
 func (c *Client) Migrate(models ...interface{}) error {
 	appLogger.Info().Msg("Starting database migration")
 
+	if err := c.DB.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`).Error; err != nil {
+		appLogger.Error().
+			Err(err).
+			Msg("Failed to create uuid-ossp extension")
+		return fmt.Errorf("create uuid-ossp extension: %w", err)
+	}
+
 	if err := c.DB.AutoMigrate(models...); err != nil {
 		appLogger.Error().
 			Err(err).

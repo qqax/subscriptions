@@ -9,31 +9,24 @@ import (
 
 // Subscription represents the database model for user server
 type Subscription struct {
-	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey;index:idx_user_service"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	// Required fields from TZ
-	ServiceName string    `gorm:"type:varchar(255);not null"` // Просто строка
-	Price       int       `gorm:"not null;check:price > 0"`   // Целое число рублей
-	UserID      uuid.UUID `gorm:"type:uuid;not null"`         // Просто храним UUID
+	ServiceName string    `gorm:"type:varchar(255);not null;index"`
+	Price       int       `gorm:"not null;check:price > 0"`
+	UserID      uuid.UUID `gorm:"type:uuid;not null;index;index:idx_user_service"`
 
-	// Date fields - храним отдельно месяц и год для запросов
-	StartMonth int  `gorm:"not null;check:start_month >= 1 AND start_month <= 12"`
-	StartYear  int  `gorm:"not null;check:start_year >= 2020"`
-	EndMonth   *int `gorm:"check:end_month >= 1 AND end_month <= 12"`
-	EndYear    *int `gorm:"check:end_year >= 2020"`
-
-	// Составной индекс для частых запросов
-	IndexUserService *struct{} `gorm:"uniqueIndex:idx_user_service"` // Уникальная подписка на сервис
-	IndexUserID      *struct{} `gorm:"index:idx_user_id"`
-	IndexServiceName *struct{} `gorm:"index:idx_service_name"`
-	IndexDate        *struct{} `gorm:"index:idx_date"` // Для фильтрации по датам
+	// Date fields
+	StartMonth int  `gorm:"not null;check:start_month >= 1 AND start_month <= 12;index:index:idx_start_date"`
+	StartYear  int  `gorm:"not null;index:idx_user_service;index:idx_start_date"`
+	EndMonth   *int `gorm:"check:end_month >= 1 AND end_month <= 12;index:idx_end_date"`
+	EndYear    *int `gorm:"index:idx_user_service;index:idx_end_date"`
 }
 
 // TableName specifies the table name
 func (*Subscription) TableName() string {
-	return "server"
+	return "subscriptions"
 }
 
 // BeforeCreate GORM hook

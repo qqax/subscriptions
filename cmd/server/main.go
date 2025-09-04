@@ -3,7 +3,7 @@ package main
 
 import (
 	"net/http"
-	"os"
+	"subscription/internal/config"
 	"subscription/internal/repository/postgres/models"
 
 	"subscription/core/service"
@@ -16,19 +16,23 @@ import (
 )
 
 func main() {
+	if err := config.Load(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to load config")
+	}
+
 	// Инициализация логгера
-	if err := logger.InitSimple("info"); err != nil {
+	if err := logger.InitSimple(config.LogLevel); err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize logger")
 	}
 
 	// Подключение к БД
 	dbConfig := postgres.Params{
-		Host:     getEnv("DB_HOST", "localhost"),
-		Port:     getEnv("DB_PORT", "5432"),
-		User:     getEnv("DB_USER", "postgres"),
-		Password: getEnv("DB_PASSWORD", "postgres"),
-		Name:     getEnv("DB_NAME", "server"),
-		SSLMode:  getEnv("DB_SSLMODE", "disable"),
+		Host:     config.DBHost,
+		Port:     config.DBPort,
+		User:     config.DBUser,
+		Password: config.DBPassword,
+		Name:     config.DBName,
+		SSLMode:  config.SSLMode,
 	}
 
 	dbClient, err := postgres.NewClient(dbConfig)
@@ -51,7 +55,7 @@ func main() {
 	// Ogen adapter
 	adapter := ogenAdapter.NewOgenAdapter(subscriptionService)
 
-	// Create ogen server
+	// Create ogen server.
 	server, err := ogenServer.NewServer(adapter)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to create ogen server")
@@ -61,8 +65,8 @@ func main() {
 	httpHandler := addMiddleware(server)
 
 	// Запуск сервера
-	logger.Info().Msg("Starting server on :8000")
-	if err = http.ListenAndServe(":8000", httpHandler); err != nil {
+	logger.Info().Msgf("Starting server on %s:%s", config.ServerHost, config.ServerPort)
+	if err = http.ListenAndServe(config.ServerHost+":"+config.ServerPort, httpHandler); err != nil {
 		logger.Fatal().Err(err).Msg("Server failed")
 	}
 }
@@ -70,11 +74,4 @@ func main() {
 func addMiddleware(handler http.Handler) http.Handler {
 	// Add your middleware here
 	return handler
-}
-
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }

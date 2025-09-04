@@ -82,8 +82,10 @@ func Init(cfg Config) error {
 		instance = &log.Logger
 
 		Info().
-			Str("level", cfg.Level).
-			Str("output", cfg.Output).
+			Str("log_level", cfg.Level).
+			Str("log_output", cfg.Output).
+			Bool("caller", cfg.Caller).
+			Bool("color", cfg.Color).
 			Msg("Logger initialized successfully")
 	})
 	return initErr

@@ -5,14 +5,23 @@ import (
 	"subscription/internal/logger"
 )
 
+const (
+	DefaultLogLevel = "info"
+	DefaultSSLMode  = "disable"
+)
+
 var (
-	LogLevel = "info"
+	LogLevel string
+
+	ServerPort string
+	ServerHost string
 
 	DBHost     string
 	DBPort     string
 	DBUser     string
 	DBPassword string
 	DBName     string
+	SSLMode    string
 )
 
 // Load initializes the application's configuration by loading environment variables.
@@ -26,12 +35,17 @@ func Load() error {
 	}
 
 	// Load and set environment variables with fallback values
-	LogLevel = optionalEnvStr("LOG_LEVEL", LogLevel)
+	LogLevel = optionalEnvStr("LOG_LEVEL", DefaultLogLevel)
+
 	DBHost = mustEnvStr("DB_HOST")
-	DBPort = optionalEnvStr("DB_PORT", DBPort)
-	DBUser = optionalEnvStr("DB_USER", DBUser)
-	DBPassword = optionalEnvStr("DB_PASSWORD", DBPassword)
-	DBName = optionalEnvStr("DB_NAME", DBName)
+	DBPort = mustEnvStr("DB_PORT")
+	DBUser = mustEnvStr("DB_USER")
+	DBPassword = mustEnvStr("DB_PASSWORD")
+	DBName = mustEnvStr("DB_NAME")
+	SSLMode = optionalEnvStr("DB_SSLMODE", DefaultSSLMode)
+
+	ServerHost = mustEnvStr("SERVER_HOST")
+	ServerPort = mustEnvStr("SERVER_PORT")
 
 	return nil
 }
