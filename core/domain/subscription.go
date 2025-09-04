@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"errors"
-	"fmt"
 	"github.com/google/uuid"
 	"time"
 )
@@ -20,7 +18,7 @@ type Subscription struct {
 }
 
 // NewSubscription creates a new Subscription with validation
-func NewSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, error) {
+func NewSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, *DomainError) {
 	sub := &Subscription{
 		ServiceName: serviceName,
 		Price:       price,
@@ -39,40 +37,28 @@ func NewSubscription(serviceName string, price int, userID uuid.UUID, startDate 
 }
 
 // Validate validates the subscription business rules
-func (s *Subscription) Validate() error {
+func (s *Subscription) Validate() *DomainError {
 	if s.ServiceName == "" {
-		return errors.New("service name is required")
+		return NewValidationError("service name", "service name is required")
 	}
 
 	if s.Price <= 0 {
-		return errors.New("price must be positive")
+		return NewValidationError("price", "price must be positive")
 	}
 
 	if s.UserID == uuid.Nil {
-		return errors.New("user ID is required")
+		return NewValidationError("user ID", "user ID is required")
 	}
 
-	if err := validateDateFormat(s.StartDate); err != nil {
-		return fmt.Errorf("invalid start date: %w", err)
-	}
-
-	if s.EndDate != nil {
-		if err := validateDateFormat(*s.EndDate); err != nil {
-			return fmt.Errorf("invalid end date: %w", err)
-		}
-	}
-
-	if s.EndDate != nil {
-		if err := validateDateRange(s.StartDate, *s.EndDate); err != nil {
-			return err
-		}
+	if err := validateSubscriptionDates(s.StartDate, s.EndDate); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 // IsActive checks if the subscription is currently active based on the provided date
-func (s *Subscription) IsActive(referenceDate string) (bool, error) {
+func (s *Subscription) IsActive(referenceDate string) (bool, *DomainError) {
 	if err := validateDateFormat(referenceDate); err != nil {
 		return false, err
 	}
@@ -97,7 +83,7 @@ func (s *Subscription) IsActive(referenceDate string) (bool, error) {
 }
 
 // CalculateCostForPeriod calculates the cost for a given period
-func (s *Subscription) CalculateCostForPeriod(startPeriod, endPeriod string) (int, error) {
+func (s *Subscription) CalculateCostForPeriod(startPeriod, endPeriod string) (int, *DomainError) {
 	if err := validateDateFormat(startPeriod); err != nil {
 		return 0, err
 	}
@@ -125,7 +111,7 @@ func (s *Subscription) CalculateCostForPeriod(startPeriod, endPeriod string) (in
 // SubscriptionFactory creates server with generated ID
 type SubscriptionFactory struct{}
 
-func (f *SubscriptionFactory) CreateSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, error) {
+func (f *SubscriptionFactory) CreateSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, *DomainError) {
 	sub, err := NewSubscription(serviceName, price, userID, startDate, endDate)
 	if err != nil {
 		return nil, err
@@ -133,8 +119,4 @@ func (f *SubscriptionFactory) CreateSubscription(serviceName string, price int, 
 
 	sub.ID = generateUUID()
 	return sub, nil
-}
-
-func generateUUID() uuid.UUID {
-	return uuid.New()
 }

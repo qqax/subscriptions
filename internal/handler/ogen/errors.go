@@ -48,7 +48,7 @@ func convertSubscriptionsSummaryTotalCostGetError(err error) *api.SubscriptionsS
 // Helper functions for creating error responses
 
 func createErrorResponse(err error) api.Error {
-	statusCode := getStatusCode(err)
+	statusCode := getStatusCodeFromDomainError(err)
 	errorCode := getErrorCode(err)
 
 	return api.Error{
@@ -60,7 +60,7 @@ func createErrorResponse(err error) api.Error {
 	}
 }
 
-func getStatusCode(err error) int {
+func getStatusCodeFromDomainError(err error) int {
 	switch {
 	case errors.Is(err, domain.ErrSubscriptionNotFound):
 		return 404
@@ -107,21 +107,7 @@ func getErrorMessage(err error) string {
 // NewError implements api.Handler.
 func (h *OgenAdapter) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
 	return &api.ErrorStatusCode{
-		StatusCode: getStatusCode(err),
+		StatusCode: getStatusCodeFromDomainError(err),
 		Response:   createErrorResponse(err),
-	}
-}
-func getStatusCodeFromDomainError(err *domain.DomainError) int {
-	switch err.Code {
-	case "validation_error", "invalid_input":
-		return 400
-	case "not_found":
-		return 404
-	case "conflict", "duplicate":
-		return 409
-	case "unauthorized", "forbidden":
-		return 403
-	default:
-		return 500
 	}
 }

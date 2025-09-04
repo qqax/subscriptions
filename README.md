@@ -62,11 +62,15 @@ Example: [.env.example](.env.example)
    cd subscription
     ```
    
+
 gorm
 opanapi
-ogen ogen --target internal/api/generated api/openapi.yaml
+ogen
 betteralign -apply ./...
 
+```bash
+ogen --target internal/api/generated api/openapi.yaml
+```
 
 # Простота использования через Makefile
 make dev        # Запуск для разработки

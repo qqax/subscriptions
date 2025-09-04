@@ -9,19 +9,19 @@ import (
 
 // Subscription represents the database model for user server
 type Subscription struct {
-	ID        uuid.UUID `gorm:"type:uuid;primaryKey;index:idx_user_service"`
+	ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	ServiceName string    `gorm:"type:varchar(255);not null;index"`
+	ServiceName string    `gorm:"type:varchar(255);not null;uniqueIndex:idx_user_service_unique;index"`
 	Price       int       `gorm:"not null;check:price > 0"`
-	UserID      uuid.UUID `gorm:"type:uuid;not null;index;index:idx_user_service"`
+	UserID      uuid.UUID `gorm:"type:uuid;not null;index;uniqueIndex:idx_user_service_unique"`
 
 	// Date fields
-	StartMonth int  `gorm:"not null;check:start_month >= 1 AND start_month <= 12;index:index:idx_start_date"`
-	StartYear  int  `gorm:"not null;index:idx_user_service;index:idx_start_date"`
+	StartMonth int  `gorm:"not null;check:start_month >= 1 AND start_month <= 12;index:idx_start_date"`
+	StartYear  int  `gorm:"not null;index:idx_start_date"`
 	EndMonth   *int `gorm:"check:end_month >= 1 AND end_month <= 12;index:idx_end_date"`
-	EndYear    *int `gorm:"index:idx_user_service;index:idx_end_date"`
+	EndYear    *int `gorm:"index:idx_end_date"`
 }
 
 // TableName specifies the table name

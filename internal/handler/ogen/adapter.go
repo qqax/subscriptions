@@ -71,7 +71,7 @@ func (h *OgenAdapter) SubscriptionsPost(ctx context.Context, req *api.Subscripti
 	subscription, err := h.service.CreateSubscription(ctx, domainReq)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create subscription")
-		return convertSubscriptionsPostError(err), nil
+		return convertSubscriptionsPostError(domain.ErrDuplicateSubscription), nil
 
 	}
 

@@ -1,9 +1,8 @@
-// internal/repository/postgres/subscription_repository.go
 package postgres
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"subscription/core/domain"
 	"subscription/internal/repository/postgres/models"
 	"time"
@@ -24,30 +23,45 @@ func NewSubscriptionRepository(db *gorm.DB) ports.SubscriptionRepository {
 	return &SubscriptionRepository{db: db}
 }
 
-// Create создает новую подписку
-func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domain.Subscription) error {
+// Create creates new subscription
+func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domain.Subscription) *domain.DomainError {
 	dbSub, err := ToDBModel(subscription)
 	if err != nil {
 		return err
 	}
 
 	result := r.db.WithContext(ctx).Create(dbSub)
-	return result.Error
+	if result.Error != nil {
+		logger.Error().Err(result.Error)
+
+		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return domain.ErrDuplicateSubscription
+		}
+
+		return domain.ErrInternal
+	}
+	return nil
 }
 
-// GetByID возвращает подписку по ID
-func (r *SubscriptionRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Subscription, error) {
+// GetByID returns subscription by ID
+func (r *SubscriptionRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Subscription, *domain.DomainError) {
 	var dbSub models.Subscription
 	result := r.db.WithContext(ctx).Where("id = ?", id).First(&dbSub)
 	if result.Error != nil {
-		return nil, result.Error
+		logger.Error().Err(result.Error)
+
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, domain.ErrSubscriptionNotFound
+		}
+
+		return nil, domain.ErrInternal
 	}
 
 	return ToDomain(&dbSub)
 }
 
 // List возвращает подписки с фильтрацией и пагинацией
-func (r *SubscriptionRepository) List(ctx context.Context, filter ports.SubscriptionFilter, pagination ports.Pagination) ([]*domain.Subscription, *ports.PaginationMetadata, error) {
+func (r *SubscriptionRepository) List(ctx context.Context, filter ports.SubscriptionFilter, pagination ports.Pagination) ([]*domain.Subscription, *ports.PaginationMetadata, *domain.DomainError) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	query := r.db.WithContext(ctx).Model(&models.Subscription{})
@@ -67,18 +81,19 @@ func (r *SubscriptionRepository) List(ctx context.Context, filter ports.Subscrip
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		log.Error().Err(err).Msg("Failed to count subscriptions")
-		return nil, nil, fmt.Errorf("failed to count subscriptions: %w", err)
+		return nil, nil, domain.ErrInternal
 	}
 
 	// Применяем пагинацию
+
 	offset := (pagination.Page - 1) * pagination.Limit
-	query = query.Offset(offset).Limit(pagination.Limit)
+	query = applyPagination(query, offset, pagination.Limit)
 
 	var dbSubs []models.Subscription
 	result := query.Find(&dbSubs)
 	if result.Error != nil {
 		log.Error().Err(result.Error).Msg("Failed to list subscriptions")
-		return nil, nil, fmt.Errorf("failed to list subscriptions: %w", result.Error)
+		return nil, nil, domain.ErrInternal
 	}
 
 	// Конвертируем в domain модели (изменили тип возвращаемого значения)
@@ -93,7 +108,8 @@ func (r *SubscriptionRepository) List(ctx context.Context, filter ports.Subscrip
 	}
 
 	// Метаданные пагинации
-	totalPages := (int(total) + pagination.Limit - 1) / pagination.Limit
+	totalPages := calculateTotalPages(int(total), pagination.Limit)
+
 	paginationMeta := &ports.PaginationMetadata{
 		Page:       pagination.Page,
 		Limit:      pagination.Limit,
@@ -106,21 +122,19 @@ func (r *SubscriptionRepository) List(ctx context.Context, filter ports.Subscrip
 }
 
 // Update обновляет подписку
-func (r *SubscriptionRepository) Update(ctx context.Context, subscription *domain.Subscription) error {
+func (r *SubscriptionRepository) Update(ctx context.Context, subscription *domain.Subscription) *domain.DomainError {
 	log := logger.WithRequestID(getRequestID(ctx))
 
-	// Конвертируем domain модель в DB модель
 	dbSub, err := ToDBModel(subscription)
 	if err != nil {
 		log.Error().Err(err).Str("subscription_id", subscription.ID.String()).Msg("Failed to convert domain model to DB model")
 		return err
 	}
 
-	// Сохраняем DB модель, а не domain модель!
 	result := r.db.WithContext(ctx).Save(dbSub)
 	if result.Error != nil {
 		log.Error().Err(result.Error).Str("subscription_id", subscription.ID.String()).Msg("Failed to update subscription")
-		return fmt.Errorf("failed to update subscription: %w", result.Error)
+		return domain.ErrInternal
 	}
 
 	log.Info().Str("subscription_id", subscription.ID.String()).Msg("Subscription updated successfully")
@@ -128,7 +142,7 @@ func (r *SubscriptionRepository) Update(ctx context.Context, subscription *domai
 }
 
 // PartialUpdate частично обновляет подписку
-func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID, updates map[string]interface{}) error {
+func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID, updates map[string]interface{}) *domain.DomainError {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	updates["updated_at"] = time.Now()
@@ -136,7 +150,7 @@ func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID
 	result := r.db.WithContext(ctx).Model(&models.Subscription{}).Where("id = ?", id).Updates(updates)
 	if result.Error != nil {
 		log.Error().Err(result.Error).Str("subscription_id", id.String()).Msg("Failed to partially update subscription")
-		return fmt.Errorf("failed to partially update subscription: %w", result.Error)
+		return domain.ErrInternal
 	}
 
 	if result.RowsAffected == 0 {
@@ -149,13 +163,13 @@ func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID
 }
 
 // Delete удаляет подписку
-func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) *domain.DomainError {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	result := r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Subscription{})
 	if result.Error != nil {
 		log.Error().Err(result.Error).Str("subscription_id", id.String()).Msg("Failed to delete subscription")
-		return fmt.Errorf("failed to delete subscription: %w", result.Error)
+		return domain.ErrInternal
 	}
 
 	if result.RowsAffected == 0 {
@@ -168,28 +182,22 @@ func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error
 }
 
 // GetTotalCost вычисляет общую стоимость подписок
-func (r *SubscriptionRepository) GetTotalCost(ctx context.Context, startDate, endDate string, filter ports.SubscriptionFilter) (int, error) {
+func (r *SubscriptionRepository) GetTotalCost(ctx context.Context, startDate, endDate string, filter ports.SubscriptionFilter) (int, *domain.DomainError) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	query := r.db.WithContext(ctx).Model(&models.Subscription{}).
 		Select("COALESCE(SUM(price), 0) as total_cost")
 
-	// Применяем фильтры
-	if len(filter.UserIDs) > 0 {
-		query = query.Where("user_id IN ?", filter.UserIDs)
-	}
-	if len(filter.ServiceNames) > 0 {
-		query = query.Where("service_name IN ?", filter.ServiceNames)
-	}
+	query = buildWhereINCondition(query, "user_id", filter.UserIDs)
+	query = buildWhereINCondition(query, "service_name", filter.ServiceNames)
 
-	// Фильтр по датам (упрощенная реализация)
 	query = applyDateRangeFilter(query, startDate, endDate)
 
 	var totalCost int
 	result := query.Scan(&totalCost)
 	if result.Error != nil {
 		log.Error().Err(result.Error).Msg("Failed to calculate total cost")
-		return 0, fmt.Errorf("failed to calculate total cost: %w", result.Error)
+		return 0, domain.ErrInternal
 	}
 
 	log.Debug().Int("total_cost", totalCost).Msg("Total cost calculated successfully")
@@ -197,7 +205,7 @@ func (r *SubscriptionRepository) GetTotalCost(ctx context.Context, startDate, en
 }
 
 // SubscriptionExists проверяет существование подписки
-func (r *SubscriptionRepository) SubscriptionExists(ctx context.Context, userID uuid.UUID, serviceName string) (bool, error) {
+func (r *SubscriptionRepository) SubscriptionExists(ctx context.Context, userID uuid.UUID, serviceName string) (bool, *domain.DomainError) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	var count int64
@@ -210,7 +218,7 @@ func (r *SubscriptionRepository) SubscriptionExists(ctx context.Context, userID 
 			Str("user_id", userID.String()).
 			Str("service_name", serviceName).
 			Msg("Failed to check subscription existence")
-		return false, fmt.Errorf("failed to check subscription existence: %w", result.Error)
+		return false, domain.ErrInternal
 	}
 
 	exists := count > 0
@@ -223,8 +231,8 @@ func (r *SubscriptionRepository) SubscriptionExists(ctx context.Context, userID 
 	return exists, nil
 }
 
-// GetByUserAndService возвращает подписку по user ID и service name
-func (r *SubscriptionRepository) GetByUserAndService(ctx context.Context, userID uuid.UUID, serviceName string) (*domain.Subscription, error) {
+// GetByUserAndService returns subscription by user ID and service name
+func (r *SubscriptionRepository) GetByUserAndService(ctx context.Context, userID uuid.UUID, serviceName string) (*domain.Subscription, *domain.DomainError) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	var dbSub models.Subscription
@@ -233,7 +241,7 @@ func (r *SubscriptionRepository) GetByUserAndService(ctx context.Context, userID
 		First(&dbSub)
 
 	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			log.Debug().
 				Str("user_id", userID.String()).
 				Str("service_name", serviceName).
@@ -244,7 +252,7 @@ func (r *SubscriptionRepository) GetByUserAndService(ctx context.Context, userID
 			Str("user_id", userID.String()).
 			Str("service_name", serviceName).
 			Msg("Failed to get subscription by user and service")
-		return nil, fmt.Errorf("failed to get subscription by user and service: %w", result.Error)
+		return nil, domain.ErrInternal
 	}
 
 	domainSub, err := ToDomain(&dbSub)
@@ -261,5 +269,5 @@ func (r *SubscriptionRepository) GetByUserAndService(ctx context.Context, userID
 		Str("service_name", serviceName).
 		Msg("Subscription found by user and service")
 
-	return domainSub, nil // Теперь возвращаем domain.Subscription
+	return domainSub, nil
 }

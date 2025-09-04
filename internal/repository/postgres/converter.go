@@ -7,7 +7,7 @@ import (
 )
 
 // ToDBModel converts domain Subscription to DB model
-func ToDBModel(domainSub *domain.Subscription) (*models.Subscription, error) {
+func ToDBModel(domainSub *domain.Subscription) (*models.Subscription, *domain.DomainError) {
 	startMonth, startYear, err := parseMMYYYY(domainSub.StartDate)
 	if err != nil {
 		return nil, err
@@ -33,9 +33,8 @@ func ToDBModel(domainSub *domain.Subscription) (*models.Subscription, error) {
 	return dbSub, nil
 }
 
-// ToDomain converts DB model to domain Subscription
-
-func ToDomain(dbSub *models.Subscription) (*domain.Subscription, error) {
+// ToDomain converts a DB model to domain Subscription
+func ToDomain(dbSub *models.Subscription) (*domain.Subscription, *domain.DomainError) {
 	startDate := formatMMYYYY(dbSub.StartMonth, dbSub.StartYear)
 
 	var endDate *string
@@ -44,7 +43,6 @@ func ToDomain(dbSub *models.Subscription) (*domain.Subscription, error) {
 		endDate = &formatted
 	}
 
-	// Создаем domain модель
 	return domain.NewSubscription(
 		dbSub.ServiceName,
 		dbSub.Price,

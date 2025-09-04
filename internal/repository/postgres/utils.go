@@ -1,21 +1,22 @@
-// internal/repository/postgres/utils.go
 package postgres
 
 import (
 	"context"
 	"strconv"
 	"strings"
+	"subscription/internal/logger"
 
 	"gorm.io/gorm"
 	"subscription/core/domain"
 )
 
+const requestIdKey = "requestId"
+
 // applyDateFilter применяет фильтрацию по датам для подписок
 func applyDateFilter(query *gorm.DB, startDateFrom string, startDateTo *string) *gorm.DB {
-	// Парсим начальную дату
 	startMonth, startYear, err := parseMMYYYY(startDateFrom)
 	if err != nil {
-		// В продакшене лучше логировать ошибку и возвращать query без фильтра
+		logger.Error().Err(err).Msg("failed to parse start date")
 		return query
 	}
 
@@ -75,19 +76,22 @@ func applyDateFilterForCost(query *gorm.DB, startDate, endDate string) *gorm.DB 
 }
 
 // parseMMYYYY парсит строку формата MM-YYYY
-func parseMMYYYY(date string) (month, year int, err error) {
+func parseMMYYYY(date string) (month, year int, err *domain.DomainError) {
 	parts := strings.Split(date, "-")
 	if len(parts) != 2 {
+		logger.Error().Str("date", date).Err(err).Msg("failed to parse date")
 		return 0, 0, domain.ErrInvalidDateformat
 	}
 
-	month, err = strconv.Atoi(parts[0])
-	if err != nil || month < 1 || month > 12 {
+	month, e := strconv.Atoi(parts[0])
+	if e != nil || month < 1 || month > 12 {
+		logger.Error().Str("date", date).Err(err).Msg("failed to parse date")
 		return 0, 0, domain.ErrInvalidDateformat
 	}
 
-	year, err = strconv.Atoi(parts[1])
-	if err != nil || year < 2020 {
+	year, e = strconv.Atoi(parts[1])
+	if e != nil {
+		logger.Error().Str("date", date).Err(err).Msg("failed to parse date")
 		return 0, 0, domain.ErrInvalidDateformat
 	}
 
@@ -104,27 +108,15 @@ func formatMMYYYY(month, year int) string {
 
 // getRequestID извлекает request ID из контекста
 func getRequestID(ctx context.Context) string {
-	// Тип для ключа контекста
-	type contextKey string
-
-	// Пробуем получить request ID из контекста
-	if requestID, ok := ctx.Value(contextKey("request_id")).(string); ok && requestID != "" {
+	if requestID, ok := ctx.Value(requestIdKey).(string); ok && requestID != "" {
 		return requestID
-	}
-
-	// Альтернативные ключи, которые могут использоваться
-	keys := []contextKey{"x-request-id", "requestId", "reqId"}
-	for _, key := range keys {
-		if value, ok := ctx.Value(key).(string); ok && value != "" {
-			return value
-		}
 	}
 
 	return "unknown"
 }
 
 // buildWhereINCondition строит условие IN для массивов
-func buildWhereINCondition(query *gorm.DB, field string, values []string) *gorm.DB {
+func buildWhereINCondition[T any](query *gorm.DB, field string, values []T) *gorm.DB {
 	if len(values) == 0 {
 		return query
 	}
