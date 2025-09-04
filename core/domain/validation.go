@@ -8,7 +8,7 @@ import (
 )
 
 // validateDateFormat проверяет формат даты MM-YYYY
-func validateDateFormat(date string) *DomainError {
+func validateDateFormat(date string) error {
 	matched, _ := regexp.MatchString(`^(0[1-9]|1[0-2])-20\d{2}$`, date)
 	if !matched {
 		return NewValidationError("date", "must be in MM-YYYY format (e.g., 12-2024)")
@@ -17,7 +17,7 @@ func validateDateFormat(date string) *DomainError {
 }
 
 // validateDateRange проверяет что startDate <= endDate
-func validateDateRange(startDate, endDate string) *DomainError {
+func validateDateRange(startDate, endDate string) error {
 	startAfterEnd, err := isDateAfter(startDate, endDate)
 	if err != nil {
 		return NewValidationError("date_range", "invalid date comparison: "+err.Error())
@@ -29,7 +29,7 @@ func validateDateRange(startDate, endDate string) *DomainError {
 }
 
 // isDateAfter проверяет что date1 > date2
-func isDateAfter(date1, date2 string) (bool, *DomainError) {
+func isDateAfter(date1, date2 string) (bool, error) {
 	year1, month1, err := parseDate(date1)
 	if err != nil {
 		return false, NewValidationError("date", "invalid first date: "+err.Error())
@@ -50,7 +50,7 @@ func isDateAfter(date1, date2 string) (bool, *DomainError) {
 }
 
 // isDateAfterOrEqual проверяет что date1 >= date2
-func isDateAfterOrEqual(date1, date2 string) (bool, *DomainError) {
+func isDateAfterOrEqual(date1, date2 string) (bool, error) {
 	after, err := isDateAfter(date1, date2)
 	if err != nil {
 		return false, err
@@ -74,7 +74,7 @@ func isDateAfterOrEqual(date1, date2 string) (bool, *DomainError) {
 }
 
 // isDateBeforeOrEqual проверяет что date1 <= date2
-func isDateBeforeOrEqual(date1, date2 string) (bool, *DomainError) {
+func isDateBeforeOrEqual(date1, date2 string) (bool, error) {
 	after, err := isDateAfter(date1, date2)
 	if err != nil {
 		return false, err
@@ -83,7 +83,7 @@ func isDateBeforeOrEqual(date1, date2 string) (bool, *DomainError) {
 }
 
 // parseDate парсит строку MM-YYYY в год и месяц
-func parseDate(date string) (year, month int, err *DomainError) {
+func parseDate(date string) (year, month int, err error) {
 	parts := strings.Split(date, "-")
 	if len(parts) != 2 {
 		return 0, 0, NewValidationError("date_format", "invalid format, expected MM-YYYY")
@@ -103,7 +103,7 @@ func parseDate(date string) (year, month int, err *DomainError) {
 }
 
 // validateSubscriptionDates валидация дат подписки для использования в сервисе
-func validateSubscriptionDates(startDate string, endDate *string) *DomainError {
+func validateSubscriptionDates(startDate string, endDate *string) error {
 	if err := validateDateFormat(startDate); err != nil {
 		return err
 	}

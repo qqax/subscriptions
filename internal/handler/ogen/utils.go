@@ -26,7 +26,7 @@ func convertSubscriptionToOgen(sub *domain.Subscription) *api.Subscription {
 		Price:       api.NewOptInt32(int32(sub.Price)),
 		UserID:      api.NewOptUUID(sub.UserID),
 		StartDate:   api.NewOptString(sub.StartDate),
-		EndDate:     api.NewOptNilString(*sub.EndDate),
+		EndDate:     newOptNilStringPtr(sub.EndDate),
 		CreatedAt:   api.NewOptDateTime(sub.CreatedAt),
 		UpdatedAt:   api.NewOptDateTime(sub.UpdatedAt),
 	}
@@ -41,7 +41,7 @@ func convertSubscriptionsToOgen(subscriptions []*domain.Subscription) []api.Subs
 			Price:       api.NewOptInt32(int32(sub.Price)),
 			UserID:      api.NewOptUUID(sub.UserID),
 			StartDate:   api.NewOptString(sub.StartDate),
-			EndDate:     api.NewOptNilString(*sub.EndDate),
+			EndDate:     newOptNilStringPtr(sub.EndDate),
 			CreatedAt:   api.NewOptDateTime(sub.CreatedAt),
 			UpdatedAt:   api.NewOptDateTime(sub.UpdatedAt),
 		}
@@ -61,4 +61,11 @@ func convertPaginationToOgen(meta *ports.PaginationMetadata) api.OptPagination {
 			Pages: api.NewOptInt(meta.TotalPages),
 		},
 	}
+}
+
+func newOptNilStringPtr(v *string) api.OptNilString {
+	if v == nil {
+		return api.OptNilString{}
+	}
+	return api.NewOptNilString(*v)
 }

@@ -8,7 +8,7 @@ import (
 )
 
 // validateFilter валидация параметров фильтрации
-func validateFilter(filter ports.SubscriptionFilter) *domain.DomainError {
+func validateFilter(filter ports.SubscriptionFilter) error {
 	// Валидация UUID в UserIDs
 	for _, userID := range filter.UserIDs {
 		if userID == uuid.Nil {
@@ -39,7 +39,7 @@ func validateFilter(filter ports.SubscriptionFilter) *domain.DomainError {
 	return nil
 }
 
-func validateDateFormat(date string) *domain.DomainError {
+func validateDateFormat(date string) error {
 	matched, _ := regexp.MatchString(`^(0[1-9]|1[0-2])-20\d{2}$`, date)
 	if !matched {
 		return domain.ErrInvalidDateformat
@@ -47,14 +47,14 @@ func validateDateFormat(date string) *domain.DomainError {
 	return nil
 }
 
-func validateDateRange(startDate, endDate string) *domain.DomainError {
+func validateDateRange(startDate, endDate string) error {
 	if startDate > endDate {
 		return domain.ErrStartDateAfterEndDate
 	}
 	return nil
 }
 
-func validateSubscriptionDates(startDate string, endDate *string) *domain.DomainError {
+func validateSubscriptionDates(startDate string, endDate *string) error {
 	if err := validateDateFormat(startDate); err != nil {
 		return err
 	}

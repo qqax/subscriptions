@@ -76,7 +76,7 @@ func applyDateFilterForCost(query *gorm.DB, startDate, endDate string) *gorm.DB 
 }
 
 // parseMMYYYY парсит строку формата MM-YYYY
-func parseMMYYYY(date string) (month, year int, err *domain.DomainError) {
+func parseMMYYYY(date string) (month, year int, err error) {
 	parts := strings.Split(date, "-")
 	if len(parts) != 2 {
 		logger.Error().Str("date", date).Err(err).Msg("failed to parse date")

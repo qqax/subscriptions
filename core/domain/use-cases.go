@@ -1,7 +1,7 @@
 package domain
 
 // calculateOverlapMonths вычисляет количество пересекающихся месяцев
-func calculateOverlapMonths(subStart, subEnd, periodStart, periodEnd string) (int, *DomainError) {
+func calculateOverlapMonths(subStart, subEnd, periodStart, periodEnd string) (int, error) {
 	// Конвертируем даты в числовой формат (YYYYMM)
 	start1, err := dateToNumber(subStart)
 	if err != nil {

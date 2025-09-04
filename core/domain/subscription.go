@@ -18,7 +18,7 @@ type Subscription struct {
 }
 
 // NewSubscription creates a new Subscription with validation
-func NewSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, *DomainError) {
+func NewSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, error) {
 	sub := &Subscription{
 		ServiceName: serviceName,
 		Price:       price,
@@ -37,7 +37,7 @@ func NewSubscription(serviceName string, price int, userID uuid.UUID, startDate 
 }
 
 // Validate validates the subscription business rules
-func (s *Subscription) Validate() *DomainError {
+func (s *Subscription) Validate() error {
 	if s.ServiceName == "" {
 		return NewValidationError("service name", "service name is required")
 	}
@@ -58,7 +58,7 @@ func (s *Subscription) Validate() *DomainError {
 }
 
 // IsActive checks if the subscription is currently active based on the provided date
-func (s *Subscription) IsActive(referenceDate string) (bool, *DomainError) {
+func (s *Subscription) IsActive(referenceDate string) (bool, error) {
 	if err := validateDateFormat(referenceDate); err != nil {
 		return false, err
 	}
@@ -83,7 +83,7 @@ func (s *Subscription) IsActive(referenceDate string) (bool, *DomainError) {
 }
 
 // CalculateCostForPeriod calculates the cost for a given period
-func (s *Subscription) CalculateCostForPeriod(startPeriod, endPeriod string) (int, *DomainError) {
+func (s *Subscription) CalculateCostForPeriod(startPeriod, endPeriod string) (int, error) {
 	if err := validateDateFormat(startPeriod); err != nil {
 		return 0, err
 	}
@@ -111,7 +111,7 @@ func (s *Subscription) CalculateCostForPeriod(startPeriod, endPeriod string) (in
 // SubscriptionFactory creates server with generated ID
 type SubscriptionFactory struct{}
 
-func (f *SubscriptionFactory) CreateSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, *DomainError) {
+func (f *SubscriptionFactory) CreateSubscription(serviceName string, price int, userID uuid.UUID, startDate string, endDate *string) (*Subscription, error) {
 	sub, err := NewSubscription(serviceName, price, userID, startDate, endDate)
 	if err != nil {
 		return nil, err

@@ -18,7 +18,7 @@ func NewSubscriptionService(repo ports.SubscriptionRepository) ports.Subscriptio
 	return &subscriptionService{repo: repo}
 }
 
-func (s *subscriptionService) CreateSubscription(ctx context.Context, req *ports.CreateSubscriptionRequest) (*domain.Subscription, *domain.DomainError) {
+func (s *subscriptionService) CreateSubscription(ctx context.Context, req *ports.CreateSubscriptionRequest) (*domain.Subscription, error) {
 	subscription, err := domain.NewSubscription(
 		req.ServiceName,
 		req.Price,
@@ -37,11 +37,11 @@ func (s *subscriptionService) CreateSubscription(ctx context.Context, req *ports
 	return subscription, nil
 }
 
-func (s *subscriptionService) GetSubscription(ctx context.Context, id uuid.UUID) (*domain.Subscription, *domain.DomainError) {
+func (s *subscriptionService) GetSubscription(ctx context.Context, id uuid.UUID) (*domain.Subscription, error) {
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *subscriptionService) ListSubscriptions(ctx context.Context, filter ports.SubscriptionFilter, pagination ports.Pagination) ([]*domain.Subscription, *ports.PaginationMetadata, *domain.DomainError) {
+func (s *subscriptionService) ListSubscriptions(ctx context.Context, filter ports.SubscriptionFilter, pagination ports.Pagination) ([]*domain.Subscription, *ports.PaginationMetadata, error) {
 	// Валидация пагинации
 	if pagination.Page < 1 {
 		pagination.Page = 1
@@ -61,7 +61,7 @@ func (s *subscriptionService) ListSubscriptions(ctx context.Context, filter port
 	return s.repo.List(ctx, filter, pagination)
 }
 
-func (s *subscriptionService) UpdateSubscription(ctx context.Context, id uuid.UUID, req *ports.UpdateSubscriptionRequest) (*domain.Subscription, *domain.DomainError) {
+func (s *subscriptionService) UpdateSubscription(ctx context.Context, id uuid.UUID, req *ports.UpdateSubscriptionRequest) (*domain.Subscription, error) {
 	// Получаем существующую подписку
 	existing, err := s.repo.GetByID(ctx, id)
 	if err != nil {
@@ -88,7 +88,7 @@ func (s *subscriptionService) UpdateSubscription(ctx context.Context, id uuid.UU
 	return existing, nil
 }
 
-func (s *subscriptionService) PartialUpdateSubscription(ctx context.Context, id uuid.UUID, req *ports.PartialUpdateRequest) (*domain.Subscription, *domain.DomainError) {
+func (s *subscriptionService) PartialUpdateSubscription(ctx context.Context, id uuid.UUID, req *ports.PartialUpdateRequest) (*domain.Subscription, error) {
 	// Создаем map для обновлений
 	updates := make(map[string]interface{})
 
@@ -117,7 +117,7 @@ func (s *subscriptionService) PartialUpdateSubscription(ctx context.Context, id 
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *subscriptionService) DeleteSubscription(ctx context.Context, id uuid.UUID) *domain.DomainError {
+func (s *subscriptionService) DeleteSubscription(ctx context.Context, id uuid.UUID) error {
 	_, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -126,7 +126,7 @@ func (s *subscriptionService) DeleteSubscription(ctx context.Context, id uuid.UU
 	return s.repo.Delete(ctx, id)
 }
 
-func (s *subscriptionService) GetTotalCost(ctx context.Context, req *ports.TotalCostRequest) (*ports.TotalCostResponse, *domain.DomainError) {
+func (s *subscriptionService) GetTotalCost(ctx context.Context, req *ports.TotalCostRequest) (*ports.TotalCostResponse, error) {
 	// Валидация дат
 	if err := validateDateFormat(req.StartDate); err != nil {
 		return nil, domain.ErrInvalidDateformat

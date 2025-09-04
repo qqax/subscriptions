@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"github.com/jackc/pgx/v5/pgconn"
 	"subscription/core/domain"
 	"subscription/internal/repository/postgres/models"
 	"time"
@@ -24,7 +25,7 @@ func NewSubscriptionRepository(db *gorm.DB) ports.SubscriptionRepository {
 }
 
 // Create creates new subscription
-func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domain.Subscription) *domain.DomainError {
+func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domain.Subscription) error {
 	dbSub, err := ToDBModel(subscription)
 	if err != nil {
 		return err
@@ -34,7 +35,8 @@ func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domai
 	if result.Error != nil {
 		logger.Error().Err(result.Error)
 
-		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" {
 			return domain.ErrDuplicateSubscription
 		}
 
@@ -44,7 +46,7 @@ func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domai
 }
 
 // GetByID returns subscription by ID
-func (r *SubscriptionRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Subscription, *domain.DomainError) {
+func (r *SubscriptionRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Subscription, error) {
 	var dbSub models.Subscription
 	result := r.db.WithContext(ctx).Where("id = ?", id).First(&dbSub)
 	if result.Error != nil {
@@ -61,7 +63,7 @@ func (r *SubscriptionRepository) GetByID(ctx context.Context, id uuid.UUID) (*do
 }
 
 // List возвращает подписки с фильтрацией и пагинацией
-func (r *SubscriptionRepository) List(ctx context.Context, filter ports.SubscriptionFilter, pagination ports.Pagination) ([]*domain.Subscription, *ports.PaginationMetadata, *domain.DomainError) {
+func (r *SubscriptionRepository) List(ctx context.Context, filter ports.SubscriptionFilter, pagination ports.Pagination) ([]*domain.Subscription, *ports.PaginationMetadata, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	query := r.db.WithContext(ctx).Model(&models.Subscription{})
@@ -122,7 +124,7 @@ func (r *SubscriptionRepository) List(ctx context.Context, filter ports.Subscrip
 }
 
 // Update обновляет подписку
-func (r *SubscriptionRepository) Update(ctx context.Context, subscription *domain.Subscription) *domain.DomainError {
+func (r *SubscriptionRepository) Update(ctx context.Context, subscription *domain.Subscription) error {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	dbSub, err := ToDBModel(subscription)
@@ -142,7 +144,7 @@ func (r *SubscriptionRepository) Update(ctx context.Context, subscription *domai
 }
 
 // PartialUpdate частично обновляет подписку
-func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID, updates map[string]interface{}) *domain.DomainError {
+func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID, updates map[string]interface{}) error {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	updates["updated_at"] = time.Now()
@@ -163,7 +165,7 @@ func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID
 }
 
 // Delete удаляет подписку
-func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) *domain.DomainError {
+func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	result := r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Subscription{})
@@ -182,7 +184,7 @@ func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) *doma
 }
 
 // GetTotalCost вычисляет общую стоимость подписок
-func (r *SubscriptionRepository) GetTotalCost(ctx context.Context, startDate, endDate string, filter ports.SubscriptionFilter) (int, *domain.DomainError) {
+func (r *SubscriptionRepository) GetTotalCost(ctx context.Context, startDate, endDate string, filter ports.SubscriptionFilter) (int, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	query := r.db.WithContext(ctx).Model(&models.Subscription{}).
@@ -205,7 +207,7 @@ func (r *SubscriptionRepository) GetTotalCost(ctx context.Context, startDate, en
 }
 
 // SubscriptionExists проверяет существование подписки
-func (r *SubscriptionRepository) SubscriptionExists(ctx context.Context, userID uuid.UUID, serviceName string) (bool, *domain.DomainError) {
+func (r *SubscriptionRepository) SubscriptionExists(ctx context.Context, userID uuid.UUID, serviceName string) (bool, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	var count int64
@@ -232,7 +234,7 @@ func (r *SubscriptionRepository) SubscriptionExists(ctx context.Context, userID 
 }
 
 // GetByUserAndService returns subscription by user ID and service name
-func (r *SubscriptionRepository) GetByUserAndService(ctx context.Context, userID uuid.UUID, serviceName string) (*domain.Subscription, *domain.DomainError) {
+func (r *SubscriptionRepository) GetByUserAndService(ctx context.Context, userID uuid.UUID, serviceName string) (*domain.Subscription, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	var dbSub models.Subscription

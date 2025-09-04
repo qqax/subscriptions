@@ -13,17 +13,17 @@ import (
 
 func AddMiddleware(handler http.Handler) http.Handler {
 	return loggingMiddleware(
-		recoveryMiddleware(
-			requestIDMiddleware(
-				corsMiddleware(
-					//authMiddleware(
-					rateLimitMiddleware(
-						handler,
-					),
-					//),
+		//recoveryMiddleware(
+		requestIDMiddleware(
+			corsMiddleware(
+				//authMiddleware(
+				rateLimitMiddleware(
+					handler,
 				),
+				//),
 			),
 		),
+		//),
 	)
 }
 

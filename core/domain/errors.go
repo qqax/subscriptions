@@ -13,12 +13,12 @@ const (
 // Error definitions for the core domain
 var (
 	ErrSubscriptionNotFound  = NewDomainError(NotFoundError, "subscription not found")
+	ErrDuplicateSubscription = NewDomainError(DuplicateError, "DuplicateError subscription")
 	ErrInvalidDateformat     = NewDomainError(ValidationError, "invalid date format, expected MM-YYYY")
 	ErrInvalidUUID           = NewDomainError(ValidationError, "invalid UUID format")
 	ErrInvalidPrice          = NewDomainError(ValidationError, "price must be positive integer")
 	ErrStartDateAfterEndDate = NewDomainError(ValidationError, "start date cannot be after end date")
 	ErrInvalidDateRange      = NewDomainError(ValidationError, "invalid date range")
-	ErrDuplicateSubscription = NewDomainError(ValidationError, "DuplicateError subscription")
 	ErrValidationFailed      = NewDomainError(ValidationError, "validation failed")
 	ErrInternal              = NewDomainError(InternalServerError, "internal server error")
 )
