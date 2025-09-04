@@ -9,7 +9,7 @@ import (
 
 // Subscription represents the database model for user server
 type Subscription struct {
-	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey;index:idx_user_service"`
+	ID        uuid.UUID `gorm:"type:uuid;primaryKey;index:idx_user_service"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
