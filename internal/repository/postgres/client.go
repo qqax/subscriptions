@@ -97,15 +97,22 @@ func (c *Client) HealthCheck() error {
 	return sqlDB.Ping()
 }
 
-// Close закрывает соединение с БД.
 func (c *Client) Close() error {
 	sqlDB, err := c.DB.DB()
 	if err != nil {
+		appLogger.Error().Err(err).Msg("Failed to get underlying SQL DB for closing")
 		return fmt.Errorf("getting sql.DB: %w", err)
 	}
 
 	appLogger.Info().Msg("Closing database connection")
-	return sqlDB.Close()
+
+	if err = sqlDB.Close(); err != nil {
+		appLogger.Error().Err(err).Msg("Failed to close database connection")
+		return fmt.Errorf("closing database connection: %w", err)
+	}
+
+	appLogger.Info().Msg("Database connection closed successfully")
+	return nil
 }
 
 // Migrate runs schema migrations for the given models.
