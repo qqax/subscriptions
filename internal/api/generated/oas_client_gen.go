@@ -27,47 +27,47 @@ func trimTrailingSlashes(u *url.URL) {
 
 // Invoker invokes operations described by OpenAPI v3 specification.
 type Invoker interface {
-	// SubscriptionsGet invokes GET /server operation.
+	// SubscriptionsGet invokes GET /subscriptions operation.
 	//
 	// Retrieve server with optional filtering and pagination.
 	//
-	// GET /server
+	// GET /subscriptions
 	SubscriptionsGet(ctx context.Context, params SubscriptionsGetParams) (SubscriptionsGetRes, error)
-	// SubscriptionsIDDelete invokes DELETE /server/{id} operation.
+	// SubscriptionsIDDelete invokes DELETE /subscriptions/{id} operation.
 	//
 	// Delete a subscription record.
 	//
-	// DELETE /server/{id}
+	// DELETE /subscriptions/{id}
 	SubscriptionsIDDelete(ctx context.Context, params SubscriptionsIDDeleteParams) (SubscriptionsIDDeleteRes, error)
-	// SubscriptionsIDGet invokes GET /server/{id} operation.
+	// SubscriptionsIDGet invokes GET /subscriptions/{id} operation.
 	//
 	// Retrieve a specific subscription by its ID.
 	//
-	// GET /server/{id}
+	// GET /subscriptions/{id}
 	SubscriptionsIDGet(ctx context.Context, params SubscriptionsIDGetParams) (SubscriptionsIDGetRes, error)
-	// SubscriptionsIDPatch invokes PATCH /server/{id} operation.
+	// SubscriptionsIDPatch invokes PATCH /subscriptions/{id} operation.
 	//
 	// Partially update a subscription record.
 	//
-	// PATCH /server/{id}
+	// PATCH /subscriptions/{id}
 	SubscriptionsIDPatch(ctx context.Context, request *SubscriptionPatch, params SubscriptionsIDPatchParams) (SubscriptionsIDPatchRes, error)
-	// SubscriptionsIDPut invokes PUT /server/{id} operation.
+	// SubscriptionsIDPut invokes PUT /subscriptions/{id} operation.
 	//
 	// Fully update a subscription record.
 	//
-	// PUT /server/{id}
+	// PUT /subscriptions/{id}
 	SubscriptionsIDPut(ctx context.Context, request *SubscriptionUpdate, params SubscriptionsIDPutParams) (SubscriptionsIDPutRes, error)
-	// SubscriptionsPost invokes POST /server operation.
+	// SubscriptionsPost invokes POST /subscriptions operation.
 	//
 	// Create a new subscription record for a user.
 	//
-	// POST /server
+	// POST /subscriptions
 	SubscriptionsPost(ctx context.Context, request *SubscriptionCreate) (SubscriptionsPostRes, error)
-	// SubscriptionsSummaryTotalCostGet invokes GET /server/summary/total-cost operation.
+	// SubscriptionsSummaryTotalCostGet invokes GET /subscriptions/summary/total-cost operation.
 	//
 	// Calculate total cost of server for selected period with filtering.
 	//
-	// GET /server/summary/total-cost
+	// GET /subscriptions/summary/total-cost
 	SubscriptionsSummaryTotalCostGet(ctx context.Context, params SubscriptionsSummaryTotalCostGetParams) (SubscriptionsSummaryTotalCostGetRes, error)
 }
 
@@ -118,11 +118,11 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 	return u
 }
 
-// SubscriptionsGet invokes GET /server operation.
+// SubscriptionsGet invokes GET /subscriptions operation.
 //
 // Retrieve server with optional filtering and pagination.
 //
-// GET /server
+// GET /subscriptions
 func (c *Client) SubscriptionsGet(ctx context.Context, params SubscriptionsGetParams) (SubscriptionsGetRes, error) {
 	res, err := c.sendSubscriptionsGet(ctx, params)
 	return res, err
@@ -131,7 +131,7 @@ func (c *Client) SubscriptionsGet(ctx context.Context, params SubscriptionsGetPa
 func (c *Client) sendSubscriptionsGet(ctx context.Context, params SubscriptionsGetParams) (res SubscriptionsGetRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/server"),
+		semconv.HTTPRouteKey.String("/subscriptions"),
 	}
 
 	// Run stopwatch.
@@ -164,7 +164,7 @@ func (c *Client) sendSubscriptionsGet(ctx context.Context, params SubscriptionsG
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [1]string
-	pathParts[0] = "/server"
+	pathParts[0] = "/subscriptions"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeQueryParams"
@@ -313,11 +313,11 @@ func (c *Client) sendSubscriptionsGet(ctx context.Context, params SubscriptionsG
 	return result, nil
 }
 
-// SubscriptionsIDDelete invokes DELETE /server/{id} operation.
+// SubscriptionsIDDelete invokes DELETE /subscriptions/{id} operation.
 //
 // Delete a subscription record.
 //
-// DELETE /server/{id}
+// DELETE /subscriptions/{id}
 func (c *Client) SubscriptionsIDDelete(ctx context.Context, params SubscriptionsIDDeleteParams) (SubscriptionsIDDeleteRes, error) {
 	res, err := c.sendSubscriptionsIDDelete(ctx, params)
 	return res, err
@@ -326,7 +326,7 @@ func (c *Client) SubscriptionsIDDelete(ctx context.Context, params Subscriptions
 func (c *Client) sendSubscriptionsIDDelete(ctx context.Context, params SubscriptionsIDDeleteParams) (res SubscriptionsIDDeleteRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("DELETE"),
-		semconv.HTTPRouteKey.String("/server/{id}"),
+		semconv.HTTPRouteKey.String("/subscriptions/{id}"),
 	}
 
 	// Run stopwatch.
@@ -359,7 +359,7 @@ func (c *Client) sendSubscriptionsIDDelete(ctx context.Context, params Subscript
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [2]string
-	pathParts[0] = "/server/"
+	pathParts[0] = "/subscriptions/"
 	{
 		// Encode "id" parameter.
 		e := uri.NewPathEncoder(uri.PathEncoderConfig{
@@ -402,11 +402,11 @@ func (c *Client) sendSubscriptionsIDDelete(ctx context.Context, params Subscript
 	return result, nil
 }
 
-// SubscriptionsIDGet invokes GET /server/{id} operation.
+// SubscriptionsIDGet invokes GET /subscriptions/{id} operation.
 //
 // Retrieve a specific subscription by its ID.
 //
-// GET /server/{id}
+// GET /subscriptions/{id}
 func (c *Client) SubscriptionsIDGet(ctx context.Context, params SubscriptionsIDGetParams) (SubscriptionsIDGetRes, error) {
 	res, err := c.sendSubscriptionsIDGet(ctx, params)
 	return res, err
@@ -415,7 +415,7 @@ func (c *Client) SubscriptionsIDGet(ctx context.Context, params SubscriptionsIDG
 func (c *Client) sendSubscriptionsIDGet(ctx context.Context, params SubscriptionsIDGetParams) (res SubscriptionsIDGetRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/server/{id}"),
+		semconv.HTTPRouteKey.String("/subscriptions/{id}"),
 	}
 
 	// Run stopwatch.
@@ -448,7 +448,7 @@ func (c *Client) sendSubscriptionsIDGet(ctx context.Context, params Subscription
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [2]string
-	pathParts[0] = "/server/"
+	pathParts[0] = "/subscriptions/"
 	{
 		// Encode "id" parameter.
 		e := uri.NewPathEncoder(uri.PathEncoderConfig{
@@ -491,11 +491,11 @@ func (c *Client) sendSubscriptionsIDGet(ctx context.Context, params Subscription
 	return result, nil
 }
 
-// SubscriptionsIDPatch invokes PATCH /server/{id} operation.
+// SubscriptionsIDPatch invokes PATCH /subscriptions/{id} operation.
 //
 // Partially update a subscription record.
 //
-// PATCH /server/{id}
+// PATCH /subscriptions/{id}
 func (c *Client) SubscriptionsIDPatch(ctx context.Context, request *SubscriptionPatch, params SubscriptionsIDPatchParams) (SubscriptionsIDPatchRes, error) {
 	res, err := c.sendSubscriptionsIDPatch(ctx, request, params)
 	return res, err
@@ -504,7 +504,7 @@ func (c *Client) SubscriptionsIDPatch(ctx context.Context, request *Subscription
 func (c *Client) sendSubscriptionsIDPatch(ctx context.Context, request *SubscriptionPatch, params SubscriptionsIDPatchParams) (res SubscriptionsIDPatchRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("PATCH"),
-		semconv.HTTPRouteKey.String("/server/{id}"),
+		semconv.HTTPRouteKey.String("/subscriptions/{id}"),
 	}
 
 	// Run stopwatch.
@@ -537,7 +537,7 @@ func (c *Client) sendSubscriptionsIDPatch(ctx context.Context, request *Subscrip
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [2]string
-	pathParts[0] = "/server/"
+	pathParts[0] = "/subscriptions/"
 	{
 		// Encode "id" parameter.
 		e := uri.NewPathEncoder(uri.PathEncoderConfig{
@@ -583,11 +583,11 @@ func (c *Client) sendSubscriptionsIDPatch(ctx context.Context, request *Subscrip
 	return result, nil
 }
 
-// SubscriptionsIDPut invokes PUT /server/{id} operation.
+// SubscriptionsIDPut invokes PUT /subscriptions/{id} operation.
 //
 // Fully update a subscription record.
 //
-// PUT /server/{id}
+// PUT /subscriptions/{id}
 func (c *Client) SubscriptionsIDPut(ctx context.Context, request *SubscriptionUpdate, params SubscriptionsIDPutParams) (SubscriptionsIDPutRes, error) {
 	res, err := c.sendSubscriptionsIDPut(ctx, request, params)
 	return res, err
@@ -596,7 +596,7 @@ func (c *Client) SubscriptionsIDPut(ctx context.Context, request *SubscriptionUp
 func (c *Client) sendSubscriptionsIDPut(ctx context.Context, request *SubscriptionUpdate, params SubscriptionsIDPutParams) (res SubscriptionsIDPutRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("PUT"),
-		semconv.HTTPRouteKey.String("/server/{id}"),
+		semconv.HTTPRouteKey.String("/subscriptions/{id}"),
 	}
 
 	// Run stopwatch.
@@ -629,7 +629,7 @@ func (c *Client) sendSubscriptionsIDPut(ctx context.Context, request *Subscripti
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [2]string
-	pathParts[0] = "/server/"
+	pathParts[0] = "/subscriptions/"
 	{
 		// Encode "id" parameter.
 		e := uri.NewPathEncoder(uri.PathEncoderConfig{
@@ -675,11 +675,11 @@ func (c *Client) sendSubscriptionsIDPut(ctx context.Context, request *Subscripti
 	return result, nil
 }
 
-// SubscriptionsPost invokes POST /server operation.
+// SubscriptionsPost invokes POST /subscriptions operation.
 //
 // Create a new subscription record for a user.
 //
-// POST /server
+// POST /subscriptions
 func (c *Client) SubscriptionsPost(ctx context.Context, request *SubscriptionCreate) (SubscriptionsPostRes, error) {
 	res, err := c.sendSubscriptionsPost(ctx, request)
 	return res, err
@@ -688,7 +688,7 @@ func (c *Client) SubscriptionsPost(ctx context.Context, request *SubscriptionCre
 func (c *Client) sendSubscriptionsPost(ctx context.Context, request *SubscriptionCreate) (res SubscriptionsPostRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("POST"),
-		semconv.HTTPRouteKey.String("/server"),
+		semconv.HTTPRouteKey.String("/subscriptions"),
 	}
 
 	// Run stopwatch.
@@ -721,7 +721,7 @@ func (c *Client) sendSubscriptionsPost(ctx context.Context, request *Subscriptio
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [1]string
-	pathParts[0] = "/server"
+	pathParts[0] = "/subscriptions"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"
@@ -749,11 +749,11 @@ func (c *Client) sendSubscriptionsPost(ctx context.Context, request *Subscriptio
 	return result, nil
 }
 
-// SubscriptionsSummaryTotalCostGet invokes GET /server/summary/total-cost operation.
+// SubscriptionsSummaryTotalCostGet invokes GET /subscriptions/summary/total-cost operation.
 //
 // Calculate total cost of server for selected period with filtering.
 //
-// GET /server/summary/total-cost
+// GET /subscriptions/summary/total-cost
 func (c *Client) SubscriptionsSummaryTotalCostGet(ctx context.Context, params SubscriptionsSummaryTotalCostGetParams) (SubscriptionsSummaryTotalCostGetRes, error) {
 	res, err := c.sendSubscriptionsSummaryTotalCostGet(ctx, params)
 	return res, err
@@ -762,7 +762,7 @@ func (c *Client) SubscriptionsSummaryTotalCostGet(ctx context.Context, params Su
 func (c *Client) sendSubscriptionsSummaryTotalCostGet(ctx context.Context, params SubscriptionsSummaryTotalCostGetParams) (res SubscriptionsSummaryTotalCostGetRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/server/summary/total-cost"),
+		semconv.HTTPRouteKey.String("/subscriptions/summary/total-cost"),
 	}
 
 	// Run stopwatch.
@@ -795,7 +795,7 @@ func (c *Client) sendSubscriptionsSummaryTotalCostGet(ctx context.Context, param
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [1]string
-	pathParts[0] = "/server/summary/total-cost"
+	pathParts[0] = "/subscriptions/summary/total-cost"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeQueryParams"

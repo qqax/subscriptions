@@ -29,17 +29,17 @@ func (c *codeRecorder) WriteHeader(status int) {
 	c.ResponseWriter.WriteHeader(status)
 }
 
-// handleSubscriptionsGetRequest handles GET /server operation.
+// handleSubscriptionsGetRequest handles GET /subscriptions operation.
 //
 // Retrieve server with optional filtering and pagination.
 //
-// GET /server
+// GET /subscriptions
 func (s *Server) handleSubscriptionsGetRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/server"),
+		semconv.HTTPRouteKey.String("/subscriptions"),
 	}
 
 	// Start a span for this request.
@@ -197,17 +197,17 @@ func (s *Server) handleSubscriptionsGetRequest(args [0]string, argsEscaped bool,
 	}
 }
 
-// handleSubscriptionsIDDeleteRequest handles DELETE /server/{id} operation.
+// handleSubscriptionsIDDeleteRequest handles DELETE /subscriptions/{id} operation.
 //
 // Delete a subscription record.
 //
-// DELETE /server/{id}
+// DELETE /subscriptions/{id}
 func (s *Server) handleSubscriptionsIDDeleteRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("DELETE"),
-		semconv.HTTPRouteKey.String("/server/{id}"),
+		semconv.HTTPRouteKey.String("/subscriptions/{id}"),
 	}
 
 	// Start a span for this request.
@@ -345,17 +345,17 @@ func (s *Server) handleSubscriptionsIDDeleteRequest(args [1]string, argsEscaped 
 	}
 }
 
-// handleSubscriptionsIDGetRequest handles GET /server/{id} operation.
+// handleSubscriptionsIDGetRequest handles GET /subscriptions/{id} operation.
 //
 // Retrieve a specific subscription by its ID.
 //
-// GET /server/{id}
+// GET /subscriptions/{id}
 func (s *Server) handleSubscriptionsIDGetRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/server/{id}"),
+		semconv.HTTPRouteKey.String("/subscriptions/{id}"),
 	}
 
 	// Start a span for this request.
@@ -493,17 +493,17 @@ func (s *Server) handleSubscriptionsIDGetRequest(args [1]string, argsEscaped boo
 	}
 }
 
-// handleSubscriptionsIDPatchRequest handles PATCH /server/{id} operation.
+// handleSubscriptionsIDPatchRequest handles PATCH /subscriptions/{id} operation.
 //
 // Partially update a subscription record.
 //
-// PATCH /server/{id}
+// PATCH /subscriptions/{id}
 func (s *Server) handleSubscriptionsIDPatchRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("PATCH"),
-		semconv.HTTPRouteKey.String("/server/{id}"),
+		semconv.HTTPRouteKey.String("/subscriptions/{id}"),
 	}
 
 	// Start a span for this request.
@@ -656,17 +656,17 @@ func (s *Server) handleSubscriptionsIDPatchRequest(args [1]string, argsEscaped b
 	}
 }
 
-// handleSubscriptionsIDPutRequest handles PUT /server/{id} operation.
+// handleSubscriptionsIDPutRequest handles PUT /subscriptions/{id} operation.
 //
 // Fully update a subscription record.
 //
-// PUT /server/{id}
+// PUT /subscriptions/{id}
 func (s *Server) handleSubscriptionsIDPutRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("PUT"),
-		semconv.HTTPRouteKey.String("/server/{id}"),
+		semconv.HTTPRouteKey.String("/subscriptions/{id}"),
 	}
 
 	// Start a span for this request.
@@ -819,17 +819,17 @@ func (s *Server) handleSubscriptionsIDPutRequest(args [1]string, argsEscaped boo
 	}
 }
 
-// handleSubscriptionsPostRequest handles POST /server operation.
+// handleSubscriptionsPostRequest handles POST /subscriptions operation.
 //
 // Create a new subscription record for a user.
 //
-// POST /server
+// POST /subscriptions
 func (s *Server) handleSubscriptionsPostRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("POST"),
-		semconv.HTTPRouteKey.String("/server"),
+		semconv.HTTPRouteKey.String("/subscriptions"),
 	}
 
 	// Start a span for this request.
@@ -967,17 +967,17 @@ func (s *Server) handleSubscriptionsPostRequest(args [0]string, argsEscaped bool
 	}
 }
 
-// handleSubscriptionsSummaryTotalCostGetRequest handles GET /server/summary/total-cost operation.
+// handleSubscriptionsSummaryTotalCostGetRequest handles GET /subscriptions/summary/total-cost operation.
 //
 // Calculate total cost of server for selected period with filtering.
 //
-// GET /server/summary/total-cost
+// GET /subscriptions/summary/total-cost
 func (s *Server) handleSubscriptionsSummaryTotalCostGetRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/server/summary/total-cost"),
+		semconv.HTTPRouteKey.String("/subscriptions/summary/total-cost"),
 	}
 
 	// Start a span for this request.

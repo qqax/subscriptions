@@ -13,65 +13,65 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
-// SubscriptionsGet implements GET /server operation.
+// SubscriptionsGet implements GET /subscriptions operation.
 //
 // Retrieve server with optional filtering and pagination.
 //
-// GET /server
+// GET /subscriptions
 func (UnimplementedHandler) SubscriptionsGet(ctx context.Context, params SubscriptionsGetParams) (r SubscriptionsGetRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// SubscriptionsIDDelete implements DELETE /server/{id} operation.
+// SubscriptionsIDDelete implements DELETE /subscriptions/{id} operation.
 //
 // Delete a subscription record.
 //
-// DELETE /server/{id}
+// DELETE /subscriptions/{id}
 func (UnimplementedHandler) SubscriptionsIDDelete(ctx context.Context, params SubscriptionsIDDeleteParams) (r SubscriptionsIDDeleteRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// SubscriptionsIDGet implements GET /server/{id} operation.
+// SubscriptionsIDGet implements GET /subscriptions/{id} operation.
 //
 // Retrieve a specific subscription by its ID.
 //
-// GET /server/{id}
+// GET /subscriptions/{id}
 func (UnimplementedHandler) SubscriptionsIDGet(ctx context.Context, params SubscriptionsIDGetParams) (r SubscriptionsIDGetRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// SubscriptionsIDPatch implements PATCH /server/{id} operation.
+// SubscriptionsIDPatch implements PATCH /subscriptions/{id} operation.
 //
 // Partially update a subscription record.
 //
-// PATCH /server/{id}
+// PATCH /subscriptions/{id}
 func (UnimplementedHandler) SubscriptionsIDPatch(ctx context.Context, req *SubscriptionPatch, params SubscriptionsIDPatchParams) (r SubscriptionsIDPatchRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// SubscriptionsIDPut implements PUT /server/{id} operation.
+// SubscriptionsIDPut implements PUT /subscriptions/{id} operation.
 //
 // Fully update a subscription record.
 //
-// PUT /server/{id}
+// PUT /subscriptions/{id}
 func (UnimplementedHandler) SubscriptionsIDPut(ctx context.Context, req *SubscriptionUpdate, params SubscriptionsIDPutParams) (r SubscriptionsIDPutRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// SubscriptionsPost implements POST /server operation.
+// SubscriptionsPost implements POST /subscriptions operation.
 //
 // Create a new subscription record for a user.
 //
-// POST /server
+// POST /subscriptions
 func (UnimplementedHandler) SubscriptionsPost(ctx context.Context, req *SubscriptionCreate) (r SubscriptionsPostRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// SubscriptionsSummaryTotalCostGet implements GET /server/summary/total-cost operation.
+// SubscriptionsSummaryTotalCostGet implements GET /subscriptions/summary/total-cost operation.
 //
 // Calculate total cost of server for selected period with filtering.
 //
-// GET /server/summary/total-cost
+// GET /subscriptions/summary/total-cost
 func (UnimplementedHandler) SubscriptionsSummaryTotalCostGet(ctx context.Context, params SubscriptionsSummaryTotalCostGetParams) (r SubscriptionsSummaryTotalCostGetRes, _ error) {
 	return r, ht.ErrNotImplemented
 }

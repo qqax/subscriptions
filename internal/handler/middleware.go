@@ -16,11 +16,11 @@ func AddMiddleware(handler http.Handler) http.Handler {
 		recoveryMiddleware(
 			requestIDMiddleware(
 				corsMiddleware(
-					authMiddleware(
-						rateLimitMiddleware(
-							handler,
-						),
+					//authMiddleware(
+					rateLimitMiddleware(
+						handler,
 					),
+					//),
 				),
 			),
 		),

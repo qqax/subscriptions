@@ -49,9 +49,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		switch elem[0] {
-		case '/': // Prefix: "/server"
+		case '/': // Prefix: "/subscriptions"
 
-			if l := len("/server"); len(elem) >= l && elem[0:l] == "/server" {
+			if l := len("/subscriptions"); len(elem) >= l && elem[0:l] == "/subscriptions" {
 				elem = elem[l:]
 			} else {
 				break
@@ -221,9 +221,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 			break
 		}
 		switch elem[0] {
-		case '/': // Prefix: "/server"
+		case '/': // Prefix: "/subscriptions"
 
-			if l := len("/server"); len(elem) >= l && elem[0:l] == "/server" {
+			if l := len("/subscriptions"); len(elem) >= l && elem[0:l] == "/subscriptions" {
 				elem = elem[l:]
 			} else {
 				break
@@ -235,7 +235,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					r.name = SubscriptionsGetOperation
 					r.summary = "List server with filtering"
 					r.operationID = ""
-					r.pathPattern = "/server"
+					r.pathPattern = "/subscriptions"
 					r.args = args
 					r.count = 0
 					return r, true
@@ -243,7 +243,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					r.name = SubscriptionsPostOperation
 					r.summary = "Create a new subscription"
 					r.operationID = ""
-					r.pathPattern = "/server"
+					r.pathPattern = "/subscriptions"
 					r.args = args
 					r.count = 0
 					return r, true
@@ -279,7 +279,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							r.name = SubscriptionsSummaryTotalCostGetOperation
 							r.summary = "Get total subscription cost"
 							r.operationID = ""
-							r.pathPattern = "/server/summary/total-cost"
+							r.pathPattern = "/subscriptions/summary/total-cost"
 							r.args = args
 							r.count = 0
 							return r, true
@@ -306,7 +306,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = SubscriptionsIDDeleteOperation
 						r.summary = "Delete subscription"
 						r.operationID = ""
-						r.pathPattern = "/server/{id}"
+						r.pathPattern = "/subscriptions/{id}"
 						r.args = args
 						r.count = 1
 						return r, true
@@ -314,7 +314,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = SubscriptionsIDGetOperation
 						r.summary = "Get subscription by ID"
 						r.operationID = ""
-						r.pathPattern = "/server/{id}"
+						r.pathPattern = "/subscriptions/{id}"
 						r.args = args
 						r.count = 1
 						return r, true
@@ -322,7 +322,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = SubscriptionsIDPatchOperation
 						r.summary = "Partially update subscription"
 						r.operationID = ""
-						r.pathPattern = "/server/{id}"
+						r.pathPattern = "/subscriptions/{id}"
 						r.args = args
 						r.count = 1
 						return r, true
@@ -330,7 +330,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = SubscriptionsIDPutOperation
 						r.summary = "Update subscription"
 						r.operationID = ""
-						r.pathPattern = "/server/{id}"
+						r.pathPattern = "/subscriptions/{id}"
 						r.args = args
 						r.count = 1
 						return r, true

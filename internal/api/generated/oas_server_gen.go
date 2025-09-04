@@ -8,47 +8,47 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
-	// SubscriptionsGet implements GET /server operation.
+	// SubscriptionsGet implements GET /subscriptions operation.
 	//
 	// Retrieve server with optional filtering and pagination.
 	//
-	// GET /server
+	// GET /subscriptions
 	SubscriptionsGet(ctx context.Context, params SubscriptionsGetParams) (SubscriptionsGetRes, error)
-	// SubscriptionsIDDelete implements DELETE /server/{id} operation.
+	// SubscriptionsIDDelete implements DELETE /subscriptions/{id} operation.
 	//
 	// Delete a subscription record.
 	//
-	// DELETE /server/{id}
+	// DELETE /subscriptions/{id}
 	SubscriptionsIDDelete(ctx context.Context, params SubscriptionsIDDeleteParams) (SubscriptionsIDDeleteRes, error)
-	// SubscriptionsIDGet implements GET /server/{id} operation.
+	// SubscriptionsIDGet implements GET /subscriptions/{id} operation.
 	//
 	// Retrieve a specific subscription by its ID.
 	//
-	// GET /server/{id}
+	// GET /subscriptions/{id}
 	SubscriptionsIDGet(ctx context.Context, params SubscriptionsIDGetParams) (SubscriptionsIDGetRes, error)
-	// SubscriptionsIDPatch implements PATCH /server/{id} operation.
+	// SubscriptionsIDPatch implements PATCH /subscriptions/{id} operation.
 	//
 	// Partially update a subscription record.
 	//
-	// PATCH /server/{id}
+	// PATCH /subscriptions/{id}
 	SubscriptionsIDPatch(ctx context.Context, req *SubscriptionPatch, params SubscriptionsIDPatchParams) (SubscriptionsIDPatchRes, error)
-	// SubscriptionsIDPut implements PUT /server/{id} operation.
+	// SubscriptionsIDPut implements PUT /subscriptions/{id} operation.
 	//
 	// Fully update a subscription record.
 	//
-	// PUT /server/{id}
+	// PUT /subscriptions/{id}
 	SubscriptionsIDPut(ctx context.Context, req *SubscriptionUpdate, params SubscriptionsIDPutParams) (SubscriptionsIDPutRes, error)
-	// SubscriptionsPost implements POST /server operation.
+	// SubscriptionsPost implements POST /subscriptions operation.
 	//
 	// Create a new subscription record for a user.
 	//
-	// POST /server
+	// POST /subscriptions
 	SubscriptionsPost(ctx context.Context, req *SubscriptionCreate) (SubscriptionsPostRes, error)
-	// SubscriptionsSummaryTotalCostGet implements GET /server/summary/total-cost operation.
+	// SubscriptionsSummaryTotalCostGet implements GET /subscriptions/summary/total-cost operation.
 	//
 	// Calculate total cost of server for selected period with filtering.
 	//
-	// GET /server/summary/total-cost
+	// GET /subscriptions/summary/total-cost
 	SubscriptionsSummaryTotalCostGet(ctx context.Context, params SubscriptionsSummaryTotalCostGetParams) (SubscriptionsSummaryTotalCostGetRes, error)
 	// NewError creates *ErrorStatusCode from error returned by handler.
 	//

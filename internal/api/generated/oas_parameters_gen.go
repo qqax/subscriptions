@@ -16,7 +16,7 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
-// SubscriptionsGetParams is parameters of GET /server operation.
+// SubscriptionsGetParams is parameters of GET /subscriptions operation.
 type SubscriptionsGetParams struct {
 	// Filter by user IDs (comma-separated).
 	UserIds []uuid.UUID
@@ -449,7 +449,7 @@ func decodeSubscriptionsGetParams(args [0]string, argsEscaped bool, r *http.Requ
 	return params, nil
 }
 
-// SubscriptionsIDDeleteParams is parameters of DELETE /server/{id} operation.
+// SubscriptionsIDDeleteParams is parameters of DELETE /subscriptions/{id} operation.
 type SubscriptionsIDDeleteParams struct {
 	// Subscription ID.
 	ID uuid.UUID
@@ -515,7 +515,7 @@ func decodeSubscriptionsIDDeleteParams(args [1]string, argsEscaped bool, r *http
 	return params, nil
 }
 
-// SubscriptionsIDGetParams is parameters of GET /server/{id} operation.
+// SubscriptionsIDGetParams is parameters of GET /subscriptions/{id} operation.
 type SubscriptionsIDGetParams struct {
 	// Subscription ID.
 	ID uuid.UUID
@@ -581,7 +581,7 @@ func decodeSubscriptionsIDGetParams(args [1]string, argsEscaped bool, r *http.Re
 	return params, nil
 }
 
-// SubscriptionsIDPatchParams is parameters of PATCH /server/{id} operation.
+// SubscriptionsIDPatchParams is parameters of PATCH /subscriptions/{id} operation.
 type SubscriptionsIDPatchParams struct {
 	// Subscription ID.
 	ID uuid.UUID
@@ -647,7 +647,7 @@ func decodeSubscriptionsIDPatchParams(args [1]string, argsEscaped bool, r *http.
 	return params, nil
 }
 
-// SubscriptionsIDPutParams is parameters of PUT /server/{id} operation.
+// SubscriptionsIDPutParams is parameters of PUT /subscriptions/{id} operation.
 type SubscriptionsIDPutParams struct {
 	// Subscription ID.
 	ID uuid.UUID
@@ -713,15 +713,15 @@ func decodeSubscriptionsIDPutParams(args [1]string, argsEscaped bool, r *http.Re
 	return params, nil
 }
 
-// SubscriptionsSummaryTotalCostGetParams is parameters of GET /server/summary/total-cost operation.
+// SubscriptionsSummaryTotalCostGetParams is parameters of GET /subscriptions/summary/total-cost operation.
 type SubscriptionsSummaryTotalCostGetParams struct {
 	// Start date in MM-YYYY format.
 	StartDate string
 	// End date in MM-YYYY format.
 	EndDate string
-	// Comma-separated list of user IDs to filter by.
+	// Comma-separated list of user IDs to filter by user id.
 	UserIds []uuid.UUID
-	// Comma-separated list of service names to filter by.
+	// Comma-separated list of service names to filter by service names.
 	ServiceNames []string
 }
 

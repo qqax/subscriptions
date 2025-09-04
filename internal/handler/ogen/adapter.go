@@ -2,14 +2,12 @@ package ogen
 
 import (
 	"context"
-	"errors"
 	"github.com/google/uuid"
+	"net/http"
 	"subscription/core/domain"
 	"subscription/core/ports"
-	"subscription/internal/logger"
-	"time"
-
 	api "subscription/internal/api/generated" // сгенерированный ogen код
+	"subscription/internal/logger"
 )
 
 type OgenAdapter struct {
@@ -195,183 +193,6 @@ func (h *OgenAdapter) SubscriptionsSummaryTotalCostGet(ctx context.Context, para
 	return response, nil
 }
 
-// Helper functions
-
-func convertFilterParams(params api.SubscriptionsGetParams) ports.SubscriptionFilter {
-	return ports.SubscriptionFilter{
-		UserIDs:       params.UserIds,
-		ServiceNames:  params.ServiceNames,
-		StartDateFrom: getStringPtrFromOpt(params.StartDateFrom),
-		StartDateTo:   getStringPtrFromOpt(params.StartDateTo),
-	}
-}
-
-func convertSubscriptionToOgen(sub *domain.Subscription) *api.Subscription {
-	if sub == nil {
-		return nil
-	}
-
-	return &api.Subscription{
-		ID:          api.NewOptUUID(sub.ID),
-		ServiceName: api.NewOptString(sub.ServiceName),
-		Price:       api.NewOptInt32(int32(sub.Price)),
-		UserID:      api.NewOptUUID(sub.UserID),
-		StartDate:   api.NewOptString(sub.StartDate),
-		EndDate:     api.NewOptNilString(*sub.EndDate),
-		CreatedAt:   api.NewOptDateTime(sub.CreatedAt),
-		UpdatedAt:   api.NewOptDateTime(sub.UpdatedAt),
-	}
-}
-
-func convertSubscriptionsToOgen(subscriptions []*domain.Subscription) []api.Subscription {
-	result := make([]api.Subscription, len(subscriptions))
-	for i, sub := range subscriptions {
-		result[i] = api.Subscription{
-			ID:          api.NewOptUUID(sub.ID),
-			ServiceName: api.NewOptString(sub.ServiceName),
-			Price:       api.NewOptInt32(int32(sub.Price)),
-			UserID:      api.NewOptUUID(sub.UserID),
-			StartDate:   api.NewOptString(sub.StartDate),
-			EndDate:     api.NewOptNilString(*sub.EndDate),
-			CreatedAt:   api.NewOptDateTime(sub.CreatedAt),
-			UpdatedAt:   api.NewOptDateTime(sub.UpdatedAt),
-		}
-	}
-	return result
-}
-
-func convertPaginationToOgen(meta *ports.PaginationMetadata) api.OptPagination {
-	if meta == nil {
-		return api.OptPagination{}
-	}
-	return api.OptPagination{
-		Value: api.Pagination{
-			Page:  api.NewOptInt(meta.Page),
-			Limit: api.NewOptInt(meta.Limit),
-			Total: api.NewOptInt(meta.Total),
-			Pages: api.NewOptInt(meta.TotalPages),
-		},
-	}
-}
-
-// Error conversion functions for each operation
-
-func convertSubscriptionsPostError(err error) *api.SubscriptionsPostBadRequest {
-	errorResponse := createErrorResponse(err)
-	return (*api.SubscriptionsPostBadRequest)(&errorResponse)
-}
-
-func convertSubscriptionsIDGetError(err error) *api.SubscriptionsIDGetNotFound {
-	errorResponse := createErrorResponse(err)
-	return (*api.SubscriptionsIDGetNotFound)(&errorResponse)
-}
-
-func convertSubscriptionsGetError(err error) *api.SubscriptionsGetBadRequest {
-	errorResponse := createErrorResponse(err)
-	return (*api.SubscriptionsGetBadRequest)(&errorResponse)
-}
-
-func convertSubscriptionsIDPutError(err error) *api.SubscriptionsIDPutBadRequest {
-	errorResponse := createErrorResponse(err)
-	return (*api.SubscriptionsIDPutBadRequest)(&errorResponse)
-}
-
-func convertSubscriptionsIDPatchError(err error) *api.SubscriptionsIDPatchBadRequest {
-	errorResponse := createErrorResponse(err)
-	return (*api.SubscriptionsIDPatchBadRequest)(&errorResponse)
-}
-
-func convertSubscriptionsIDDeleteError(err error) *api.SubscriptionsIDDeleteNotFound {
-	errorResponse := createErrorResponse(err)
-	return (*api.SubscriptionsIDDeleteNotFound)(&errorResponse)
-}
-
-func convertSubscriptionsSummaryTotalCostGetError(err error) *api.SubscriptionsSummaryTotalCostGetBadRequest {
-	errorResponse := createErrorResponse(err)
-	return (*api.SubscriptionsSummaryTotalCostGetBadRequest)(&errorResponse)
-}
-
-// Helper functions for creating error responses
-
-func createErrorResponse(err error) api.Error {
-	statusCode := getStatusCode(err)
-	errorCode := getErrorCode(err)
-
-	return api.Error{
-		Error:     errorCode,
-		Message:   getErrorMessage(err),
-		Code:      api.NewOptInt32(int32(statusCode)),
-		Timestamp: api.NewOptDateTime(time.Now()),
-		Details:   api.OptErrorDetails{},
-	}
-}
-
-func getStatusCode(err error) int {
-	switch {
-	case errors.Is(err, domain.ErrSubscriptionNotFound):
-		return 404
-	case errors.Is(err, domain.ErrInvalidDateformat),
-		errors.Is(err, domain.ErrInvalidUUID),
-		errors.Is(err, domain.ErrInvalidPrice),
-		errors.Is(err, domain.ErrStartDateAfterEndDate),
-		errors.Is(err, domain.ErrInvalidDateRange):
-		return 400
-	case errors.Is(err, domain.ErrDuplicateSubscription):
-		return 409
-	default:
-		return 500
-	}
-}
-
-func getErrorCode(err error) string {
-	switch {
-	case errors.Is(err, domain.ErrSubscriptionNotFound):
-		return "not_found"
-	case errors.Is(err, domain.ErrInvalidDateformat):
-		return "invalid_date_format"
-	case errors.Is(err, domain.ErrInvalidUUID):
-		return "invalid_uuid"
-	case errors.Is(err, domain.ErrInvalidPrice):
-		return "invalid_price"
-	case errors.Is(err, domain.ErrStartDateAfterEndDate):
-		return "invalid_date_range"
-	case errors.Is(err, domain.ErrInvalidDateRange):
-		return "invalid_date_range"
-	case errors.Is(err, domain.ErrDuplicateSubscription):
-		return "duplicate_subscription"
-	default:
-		return "internal_error"
-	}
-}
-
-func getErrorMessage(err error) string {
-	// Для стандартных ошибок возвращаем их текст
-	// Для кастомных можно добавать дополнительную информацию
-	return err.Error()
-}
-
-// NewError implements api.Handler.
-func (h *OgenAdapter) NewError(ctx context.Context, err error) *api.ErrorStatusCode {
-	return &api.ErrorStatusCode{
-		StatusCode: getStatusCode(err),
-		Response:   createErrorResponse(err),
-	}
-}
-func getStatusCodeFromDomainError(err *domain.DomainError) int {
-	switch err.Code {
-	case "validation_error", "invalid_input":
-		return 400
-	case "not_found":
-		return 404
-	case "conflict", "duplicate":
-		return 409
-	case "unauthorized", "forbidden":
-		return 403
-	default:
-		return 500
-	}
-}
-
 // Utility functions for working with ogen optional types
 
 func getStringPtrFromOptNil(opt api.OptNilString) *string {
@@ -411,7 +232,37 @@ func getIntOrDefault(get func() (int, bool), defaultValue int) int {
 	return defaultValue
 }
 
+type contextKey string
+
+const (
+	// RequestIDKey стандартный ключ для request ID
+	RequestIDKey contextKey = "request_id"
+	// XRequestIDKey ключ для заголовка X-Request-ID
+	XRequestIDKey contextKey = "x-request-id"
+)
+
 func getRequestID(ctx context.Context) string {
-	// Implement request ID extraction from context
+	// Пробуем получить request ID из стандартных ключей
+	keys := []contextKey{RequestIDKey, XRequestIDKey}
+	for _, key := range keys {
+		if value, ok := ctx.Value(key).(string); ok && value != "" {
+			return value
+		}
+	}
+
+	// Пробуем получить из HTTP заголовков (если контекст содержит http.Request)
+	if req, ok := ctx.Value("http_request").(*http.Request); ok {
+		if requestID := req.Header.Get("X-Request-ID"); requestID != "" {
+			return requestID
+		}
+	}
+
+	// Пробуем получить из gRPC метаданных (если применимо)
+	//if md, ok := metadata.FromIncomingContext(ctx); ok {
+	//	if values := md.Get("x-request-id"); len(values) > 0 {
+	//		return values[0]
+	//	}
+	//}
+
 	return "unknown"
 }

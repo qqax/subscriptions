@@ -5,7 +5,7 @@ info:
   description: API for managing user server with PostgreSQL backend
 
 servers:
-  - url: http://localhost:8000/api
+  - url: http://localhost:8080/api
     description: Development server
 
 paths:

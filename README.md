@@ -45,8 +45,7 @@ subscription/
 ### Prerequisites
 
 - Go (1.21+)
-- PostgreSQL (or another supported DB)
-- `make`, `migrate`, or your preferred tooling for migrations
+- PostgreSQL
 
 ### Environments naming
 - Production: `.env.prod`
