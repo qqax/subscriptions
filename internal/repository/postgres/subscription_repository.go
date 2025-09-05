@@ -197,17 +197,17 @@ func (r *SubscriptionRepository) GetTotalCost(ctx context.Context, startDate, en
 
 	query := r.db.WithContext(ctx).Model(&model.Subscription{}).
 		Select(`
-			SUM(
+			COALESCE(SUM(
 					CASE
 						WHEN (end_year IS NOT NULL AND ? > end_year * 12 + end_month) OR (? < start_year * 12 + start_month)
 							THEN 0
 						ELSE
 							(
-								LEAST(COALESCE(end_year * 12 + end_month, ?), ?::bigint) -
+								LEAST(COALESCE(end_year * 12 + end_month + 1, ?), ?::bigint) -
 								GREATEST(start_year * 12 + start_month, ?::bigint)
 								) * price
 						END
-			) AS total_cost`,
+			), 0) AS total_cost`,
 			startMonths, endMonths, endMonths, endMonths, startMonths)
 
 	query = buildWhereINCondition(query, "user_id", filter.UserIDs)
