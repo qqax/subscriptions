@@ -7,23 +7,29 @@ A clean, modular microservice using **Hexagonal Architecture** (Ports & Adapters
 ##  Project Structure
 ```
 subscription/
-├── api/
-│ └── opanapi.yaml/ # (OpenAPI spec)
-├── cmd/
-│ └── server/
-│ └──── main.go # Startup, dependency wiring
-├── core/
-│ └── domain/ # Domain entities
-│ └── ports/ # Interfaces (repository, service)
-│ └── service/ # Driven adapter realization
-├── internal/
-│ ├── api/
-│ └──── generated # openapi generated files
-│ ├── config/ # Environment loading and DSN builder
-│ ├── handler/ # Driver adapter realization (openapi rest adapter)
-│ └── logger/ # ZeroLog setup
-│ └── repository/ # GORM models, DB connection, repository impl
-└── README.md # This file
+├── api
+│   └── openapi.yaml # (OpenAPI spec)
+├── cmd
+│   └── server/
+│          └── main.go # Startup, dependency wiring
+├── core
+│   ├── domain       # Domain entities
+│   ├── ports        # Interfaces (repository, service)
+│   └── usecase
+├── docker-compose.prod.yml
+├── docker-compose.yml
+├── Dockerfile
+├── Dockerfile.dev
+├── go.mod
+├── go.sum
+├── internal
+│   └── api
+│        └── genetated  # openapi generated files
+│   ├── config       # Environment loading and DSN builder
+│   ├── handler      # Driver adapter realization (openapi rest adapter)
+│   ├── logger       # ZeroLog setup
+│   └── repository   # GORM models, DB connection, repository impl
+└── README.md
 ```
 
 ---
@@ -34,17 +40,17 @@ subscription/
 - Go (1.21+)
 - PostgreSQL
 
+### Technologies
+- gorm
+- openapi specification
+- ogen generation
+
 #### Environments naming
 - Production: `.env.prod`
 - Development: `.env.dev`
 - Local: `.env.local`
 
 _Example:_ [.env.example](.env.example)
-
-### Technologies
-- gorm
-- openapi specification
-- ogen generation
 
 Ogen command to generate OpenAPI files:
 ```bash
