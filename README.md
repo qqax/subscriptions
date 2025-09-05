@@ -4,38 +4,25 @@ A clean, modular microservice using **Hexagonal Architecture** (Ports & Adapters
 
 ---
 
-##  Features
-
-- CRUD operations on subscriptions including service name, monthly price, user ID (UUID), start/end dates.
-- Calculate total subscription cost for a period, with optional filters by user or service.
-- Structured as hexagonal architecture:
-    - `domain`: pure business entities
-    - `ports`: interfaces
-    - `app`: use-case logic
-    - `adapters`: HTTP handlers, DB connections (GORM), logger, OpenAPI spec, generated models
-
----
-
 ##  Project Structure
 ```
 subscription/
+├── api/
+│ └── opanapi.yaml/ # (OpenAPI spec)
 ├── cmd/
 │ └── server/
-│ └── main.go # Startup, dependency wiring
+│ └──── main.go # Startup, dependency wiring
+├── core/
+│ └── domain/ # Domain entities
+│ └── ports/ # Interfaces (repository, service)
+│ └── service/ # Driven adapter realization
 ├── internal/
-│ ├── domain/ # Domain entities
-│ ├── ports/ # Interfaces (repository, service)
-│ ├── app/ # Business logic / use-cases
-│ └── adapters/
-│ ├── http/ # REST handlers, OpenAPI glue
-│ └── db/ # GORM models, DB connection, repository impl
-├── pkg/
+│ ├── api/
+│ └──── generated # openapi generated files
+│ ├── config/ # Environment loading and DSN builder
+│ ├── handler/ # Driver adapter realization (openapi rest adapter)
 │ └── logger/ # ZeroLog setup
-├── config/ # Environment loading and DSN builder
-├── openapi/ # subscriptions.yaml (OpenAPI spec)
-├── generated/ # GORM Gen generated tables
-├── migrations/ # SQL migration files
-├── go.mod # Module definitions
+│ └── repository/ # GORM models, DB connection, repository impl
 └── README.md # This file
 ```
 
@@ -47,72 +34,58 @@ subscription/
 - Go (1.21+)
 - PostgreSQL
 
-### Environments naming
+#### Environments naming
 - Production: `.env.prod`
 - Development: `.env.dev`
 - Local: `.env.local`
 
-Example: [.env.example](.env.example)
+_Example:_ [.env.example](.env.example)
+
+### Technologies
+- gorm
+- openapi specification
+- ogen generation
+
+Ogen command to generate OpenAPI files:
+```bash
+ogen --target internal/api/generated api/openapi.yaml
+```
 
 ### Setup
 
 1. **Clone the repo**  
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/qqax/subscriptions
    cd subscription
     ```
+2. **Lifecycle**
+    ```bash
+    # Build development image
+    docker compose --env-file .env.dev build
    
+    # Start the development environment
+    docker compose --env-file .env.dev up
+    
+    # Stop and remove containers, networks, etc.
+    docker compose down
+    
+    # View logs
+    docker compose logs -f app
+    
+    # Rebuild and restart containers
+    docker compose up -d --build
+    
+    # Access the database container
+    docker compose exec postgres psql -U user -d app_db
+    ```
 
-gorm
-opanapi
-ogen
-betteralign -apply ./...
-
-```bash
-ogen --target internal/api/generated api/openapi.yaml
-```
-
-# Простота использования через Makefile
-make dev        # Запуск для разработки
-make test       # Запуск тестов
-make deploy     # Деплой в прод
-
-make build      # Собрать образ
-make test       # Запустить тесты
-make up         # Запустить композ
-make deploy     # Деплой
-
-
-```bash
-# Запуск development окружения
-docker-compose up -d
-
-# Остановка
-docker-compose down
-
-# Просмотр логов
-docker-compose logs -f app
-
-# Пересборка
-docker-compose up -d --build
-
-# Зайти в контейнер с БД
-docker-compose exec postgres psql -U user -d app_db
-```
 
 ## Production
+**need certificates!**
 ```bash
-# Сборка production образа
-docker build -t my-app:prod .
+    # Build production image
+    docker compose -t --env-file .env.prod build
 
-# Запуск production контейнера
-docker run -d \
--p 8080:8080 \
---name my-app \
---env-file .env.local \
-my-app:prod
+    # Start the production environment
+    docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
-
-docker compose --env-file .env.dev up
-docker compose -f docker-compose.prod.yml --env-file .env.prod  up -d
-

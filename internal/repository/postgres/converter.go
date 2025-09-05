@@ -2,17 +2,17 @@ package postgres
 
 import (
 	"subscription/core/domain"
-	"subscription/internal/repository/postgres/models"
+	"subscription/internal/repository/postgres/model"
 )
 
 // ToDBModel converts domain Subscription to DB model
-func ToDBModel(domainSub *domain.Subscription) (*models.Subscription, error) {
+func ToDBModel(domainSub *domain.Subscription) (*model.Subscription, error) {
 	startMonth, startYear, err := parseMMYYYY(domainSub.StartDate)
 	if err != nil {
 		return nil, err
 	}
 
-	dbSub := &models.Subscription{
+	dbSub := &model.Subscription{
 		ID:          domainSub.ID,
 		ServiceName: domainSub.ServiceName,
 		Price:       domainSub.Price,
@@ -34,7 +34,7 @@ func ToDBModel(domainSub *domain.Subscription) (*models.Subscription, error) {
 }
 
 // ToDomain converts a DB model to domain Subscription
-func ToDomain(dbSub *models.Subscription) (*domain.Subscription, error) {
+func ToDomain(dbSub *model.Subscription) (*domain.Subscription, error) {
 	startDate := formatMMYYYY(dbSub.StartMonth, dbSub.StartYear)
 
 	var endDate *string

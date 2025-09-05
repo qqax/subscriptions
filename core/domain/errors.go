@@ -25,9 +25,9 @@ var (
 
 // DomainError represents a domain-specific error
 type DomainError struct {
-	Code    int                    `json:"code"`
-	Message string                 `json:"message"`
 	Details map[string]interface{} `json:"details,omitempty"`
+	Message string                 `json:"message"`
+	Code    int                    `json:"code"`
 }
 
 func (e *DomainError) Error() string {
@@ -52,21 +52,5 @@ func NewValidationError(field, reason string) *DomainError {
 			"reason": reason,
 			"type":   "validation",
 		},
-	}
-}
-
-// NewValidationErrorWithDetails creates validation error with additional details
-func NewValidationErrorWithDetails(field, reason string, details map[string]interface{}) *DomainError {
-	if details == nil {
-		details = make(map[string]interface{})
-	}
-	details["field"] = field
-	details["reason"] = reason
-	details["type"] = "validation"
-
-	return &DomainError{
-		Code:    ValidationError,
-		Message: "Validation failed for field: " + field,
-		Details: details,
 	}
 }

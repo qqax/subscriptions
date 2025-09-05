@@ -1,7 +1,7 @@
 services:
   app:
-    build: .  # ← Добавьте build вместо image
-    image: my-app:prod  # ← Опционально: тег для образа
+    build: .
+    image: my-app:prod
     ports:
       - "8080:8080"
     env_file:

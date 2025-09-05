@@ -197,9 +197,9 @@ func WithUserID(userID string) *zerolog.Logger {
 	return WithField("user_id", userID)
 }
 
-// WithService creates a logger with service name
+// WithService creates a logger with usecase name
 func WithService(service string) *zerolog.Logger {
-	return WithField("service", service)
+	return WithField("usecase", service)
 }
 
 // Alternative approach: Simple helper methods that return the event

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/jackc/pgx/v5/pgconn"
 	"subscription/core/domain"
-	"subscription/internal/repository/postgres/models"
+	"subscription/internal/repository/postgres/model"
 	"time"
 
 	"gorm.io/gorm"
@@ -48,7 +48,7 @@ func (r *SubscriptionRepository) Create(ctx context.Context, subscription *domai
 
 // GetByID returns subscription by ID
 func (r *SubscriptionRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Subscription, error) {
-	var dbSub models.Subscription
+	var dbSub model.Subscription
 	result := r.db.WithContext(ctx).Where("id = ?", id).First(&dbSub)
 	if result.Error != nil {
 		logger.Error().Err(result.Error)
@@ -67,7 +67,7 @@ func (r *SubscriptionRepository) GetByID(ctx context.Context, id uuid.UUID) (*do
 func (r *SubscriptionRepository) List(ctx context.Context, filter ports.SubscriptionFilter, pagination ports.Pagination) ([]*domain.Subscription, *ports.PaginationMetadata, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
-	query := r.db.WithContext(ctx).Model(&models.Subscription{})
+	query := r.db.WithContext(ctx).Model(&model.Subscription{})
 
 	if len(filter.UserIDs) > 0 {
 		query = query.Where("user_id IN ?", filter.UserIDs)
@@ -88,7 +88,7 @@ func (r *SubscriptionRepository) List(ctx context.Context, filter ports.Subscrip
 	offset := (pagination.Page - 1) * pagination.Limit
 	query = applyPagination(query, offset, pagination.Limit)
 
-	var dbSubs []models.Subscription
+	var dbSubs []model.Subscription
 	result := query.Find(&dbSubs)
 	if result.Error != nil {
 		log.Error().Err(result.Error).Msg("Failed to list subscriptions")
@@ -144,7 +144,7 @@ func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID
 
 	updates["updated_at"] = time.Now()
 
-	result := r.db.WithContext(ctx).Model(&models.Subscription{}).Where("id = ?", id).Updates(updates)
+	result := r.db.WithContext(ctx).Model(&model.Subscription{}).Where("id = ?", id).Updates(updates)
 	if result.Error != nil {
 		log.Error().Err(result.Error).Str("subscription_id", id.String()).Msg("Failed to partially update subscription")
 		return domain.ErrInternal
@@ -163,7 +163,7 @@ func (r *SubscriptionRepository) PartialUpdate(ctx context.Context, id uuid.UUID
 func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	log := logger.WithRequestID(getRequestID(ctx))
 
-	result := r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Subscription{})
+	result := r.db.WithContext(ctx).Where("id = ?", id).Delete(&model.Subscription{})
 	if result.Error != nil {
 		log.Error().Err(result.Error).Str("subscription_id", id.String()).Msg("Failed to delete subscription")
 		return domain.ErrInternal
@@ -195,7 +195,7 @@ func (r *SubscriptionRepository) GetTotalCost(ctx context.Context, startDate, en
 	startMonths := startYear*12 + startMonth
 	endMonths := endYear*12 + endMonth + 1
 
-	query := r.db.WithContext(ctx).Model(&models.Subscription{}).
+	query := r.db.WithContext(ctx).Model(&model.Subscription{}).
 		Select(`
 			SUM(
 					CASE
@@ -229,7 +229,7 @@ func (r *SubscriptionRepository) SubscriptionExists(ctx context.Context, userID 
 	log := logger.WithRequestID(getRequestID(ctx))
 
 	var count int64
-	result := r.db.WithContext(ctx).Model(&models.Subscription{}).
+	result := r.db.WithContext(ctx).Model(&model.Subscription{}).
 		Where("user_id = ? AND service_name = ?", userID, serviceName).
 		Count(&count)
 
@@ -255,7 +255,7 @@ func (r *SubscriptionRepository) SubscriptionExists(ctx context.Context, userID 
 func (r *SubscriptionRepository) GetByUserAndService(ctx context.Context, userID uuid.UUID, serviceName string) (*domain.Subscription, error) {
 	log := logger.WithRequestID(getRequestID(ctx))
 
-	var dbSub models.Subscription
+	var dbSub model.Subscription
 	result := r.db.WithContext(ctx).
 		Where("user_id = ? AND service_name = ?", userID, serviceName).
 		First(&dbSub)

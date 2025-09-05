@@ -114,7 +114,7 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// Migrate runs schema migrations for the given models.
+// Migrate runs schema migrations for the given model.
 func (c *Client) Migrate(models ...interface{}) error {
 	appLogger.Info().Msg("Starting database migration")
 

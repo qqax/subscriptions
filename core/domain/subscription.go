@@ -7,14 +7,14 @@ import (
 
 // Subscription represents the core business entity for user server
 type Subscription struct {
-	ID          uuid.UUID
-	ServiceName string
-	Price       int
-	UserID      uuid.UUID
-	StartDate   string  // Format: MM-YYYY
-	EndDate     *string // Format: MM-YYYY, nullable
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	EndDate     *string // Format: MM-YYYY, nullable
+	ServiceName string
+	StartDate   string // Format: MM-YYYY
+	Price       int
+	ID          uuid.UUID
+	UserID      uuid.UUID
 }
 
 // NewSubscription creates a new Subscription with validation

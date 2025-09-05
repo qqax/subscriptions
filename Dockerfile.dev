@@ -19,7 +19,8 @@ RUN go mod download
 COPY . .
 
 # Create a non-root user for safer dev execution
-RUN adduser -D -u 1000 devuser && addgroup -g 1000 devuser
+RUN addgroup -g 1000 -S devgroup && \
+    adduser -u 1000 -S -G devgroup devuser
 USER devuser
 
 # Expose application port

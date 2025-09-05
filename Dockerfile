@@ -18,7 +18,7 @@ FROM scratch
 
 # Copy binary and necessary files from builder
 COPY --from=builder /app/main /
-#COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Use a non-root user (optional)
 USER 1000:1000

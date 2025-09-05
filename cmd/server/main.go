@@ -9,11 +9,11 @@ import (
 	"os/signal"
 	"subscription/internal/config"
 	"subscription/internal/handler"
-	"subscription/internal/repository/postgres/models"
+	"subscription/internal/repository/postgres/model"
 	"syscall"
 	"time"
 
-	"subscription/core/service"
+	"subscription/core/usecase"
 	ogenServer "subscription/internal/api/generated"
 	ogenAdapter "subscription/internal/handler/ogen"
 	"subscription/internal/logger"
@@ -50,7 +50,7 @@ func main() {
 	defer dbClient.Close()
 
 	// Migrations
-	if err = dbClient.Migrate(&models.Subscription{}); err != nil {
+	if err = dbClient.Migrate(&model.Subscription{}); err != nil {
 		logger.Fatal().Err(err).Msg("Failed to run migrations")
 	}
 
@@ -58,7 +58,7 @@ func main() {
 	repoAdapter := postgres.NewSubscriptionRepository(dbClient.DB)
 
 	// Сервис (ядро)
-	subscriptionService := service.NewSubscriptionService(repoAdapter)
+	subscriptionService := usecase.NewSubscriptionService(repoAdapter)
 
 	// Ogen httpAdapter
 	httpAdapter := ogenAdapter.NewOgenAdapter(subscriptionService)

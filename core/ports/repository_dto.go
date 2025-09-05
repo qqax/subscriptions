@@ -4,11 +4,11 @@ import "github.com/google/uuid"
 
 // SubscriptionFilter contains filtering criteria for server
 type SubscriptionFilter struct {
-	UserIDs       []uuid.UUID `json:"user_ids" validate:"omitempty,dive,uuid4"`
-	ServiceNames  []string    `json:"service_names" validate:"omitempty"`
 	StartDateFrom *string     `json:"start_date_from" validate:"omitempty,mm_yyyy_format"`
 	StartDateTo   *string     `json:"start_date_to" validate:"omitempty,mm_yyyy_format"`
 	EndDateNull   *bool       `json:"end_date_null" validate:"omitempty"`
+	UserIDs       []uuid.UUID `json:"user_ids" validate:"omitempty,dive,uuid4"`
+	ServiceNames  []string    `json:"service_names" validate:"omitempty"`
 }
 
 // Pagination contains pagination parameters
