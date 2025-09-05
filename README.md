@@ -113,4 +113,6 @@ docker run -d \
 my-app:prod
 ```
 
+docker compose --env-file .env.dev up
+docker compose -f docker-compose.prod.yml --env-file .env.prod  up -d
 

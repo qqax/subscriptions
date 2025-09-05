@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Go приложение (development)
+  # Go app (development)
   app:
     build:
       context: .
@@ -11,6 +11,8 @@ services:
     volumes:
       - .:/app
       - go-modules:/go/pkg/mod
+#      - air-tmp:/app/tmp
+#    entrypoint: /bin/sh -c "chown -R 1000:1000 /app/tmp && exec your_start_command"
     environment:
       - ENV=development
       - LOG_LEVEL=${LOG_LEVEL}
@@ -27,7 +29,7 @@ services:
     env_file:
       - .env.dev
 
-  # PostgreSQL база данных
+  # PostgreSQL
   postgres:
     image: postgres:15-alpine
     environment:
@@ -35,7 +37,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./migrations:/docker-entrypoint-initdb.d
@@ -43,21 +45,10 @@ services:
       - .env.dev
     restart: unless-stopped
 
-#  # pgAdmin для управления БД (опционально)
-#  pgadmin:
-#    image: dpage/pgadmin4
-#    environment:
-#      - PGADMIN_DEFAULT_EMAIL=admin@example.com
-#      - PGADMIN_DEFAULT_PASSWORD=admin
-#    ports:
-#      - "5050:80"
-#    depends_on:
-#      - postgres
-#    restart: unless-stopped
-
 volumes:
   postgres-data:
   go-modules:
+  air-tmp:
 
 networks:
   default:

@@ -1,39 +1,30 @@
-# Build stage
+# --- Build stage ---
 FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
-# Копируем файлы модулей
+# Copy go module files and download dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Копируем исходный код
+# Copy the rest of the source code
 COPY . .
 
-# Собираем приложение
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
+# Build the statically linked binary
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o main ./cmd/server
 
-# Final stage
-FROM alpine:3.18
+# --- Final stage (minimal runtime image) ---
+FROM scratch
 
-WORKDIR /app
+# Copy binary and necessary files from builder
+COPY --from=builder /app/main /
+#COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-# Устанавливаем зависимости времени выполнения
-RUN apk --no-cache add ca-certificates
+# Use a non-root user (optional)
+USER 1000:1000
 
-# Копируем бинарник из builder stage
-COPY --from=builder /app/main .
-
-# Копируем статические файлы
-COPY ./migrations ./migrations
-COPY ./config ./config
-
-# Создаем non-root пользователя
-RUN adduser -D -u 1000 appuser
-USER appuser
-
-# Открываем порт
+# Expose the application port
 EXPOSE 8080
 
-# Запускаем приложение
-CMD ["./main"]
+# Run the application
+ENTRYPOINT ["/main"]

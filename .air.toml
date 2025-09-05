@@ -1,0 +1,23 @@
+# .air.toml
+root = "."
+tmp_dir = "/tmp/build"
+
+[build]
+cmd = "go build -o /tmp/build/main ./cmd/server"
+bin = "/tmp/build/main"
+include_ext = ["go", "toml", "yaml", "yml"]
+exclude_dir = ["vendor", "migrations", "docs", "tmp"]
+exclude_file = []
+include_dir = []
+
+[log]
+time = true
+
+[color]
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[misc]
+clean_on_exit = true
